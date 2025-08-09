@@ -1,6 +1,5 @@
 using fcg.GameService.API.DTOs.Requests;
 using fcg.GameService.API.UseCases.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fcg.GameService.API.Controllers
@@ -43,6 +42,13 @@ namespace fcg.GameService.API.Controllers
         {
             var response = await _gameUseCase.UpdateAsync(id, game);
 
+            return response ? NoContent() : NotFound();
+        }
+
+        [HttpPatch("/tags/{id}")]
+        public async Task<IActionResult> UpdateTags(string id, [FromBody] string[] tags)
+        {
+            var response = await _gameUseCase.UpdateTagsAsync(id, tags);
             return response ? NoContent() : NotFound();
         }
 

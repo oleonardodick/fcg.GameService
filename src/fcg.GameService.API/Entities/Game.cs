@@ -18,6 +18,6 @@ public class Game : BaseEntity
     [BsonElement("releasedData")]
     public DateTime ReleasedDate { get; set; }
 
-    [BsonElement("genre")]
-    public required string Genre { get; set; }
+    [BsonElement("tags")]
+    public required string[] Tags { get; set; }
 }

@@ -10,5 +10,5 @@ public class CreateGameDTO
 
     public DateTime ReleasedDate { get; set; }
 
-    public required string Genre { get; set; }
+    public required string[] Tags { get; set; }
 }

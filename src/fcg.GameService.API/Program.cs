@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var mongoSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+var mongoSettings = builder.Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
 
 builder.Services.AddHealthChecks()
     .AddMongoDb(
@@ -20,7 +20,7 @@ builder.Services.AddHealthChecks()
     );
 
 builder.Services.Configure<MongoDbSettings>(
-    builder.Configuration.GetSection("MongoDbSettings")
+    builder.Configuration.GetSection(nameof(MongoDbSettings))
 );
 
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();

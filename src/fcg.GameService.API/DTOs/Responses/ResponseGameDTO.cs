@@ -11,5 +11,5 @@ public class ResponseGameDTO
 
     public DateTime ReleasedDate { get; set; }
 
-    public string Genre { get; set; } = string.Empty;
+    public string[] Tags { get; set; } = [];
 }

@@ -27,7 +27,7 @@ public class GameUseCase : IGameUseCase
             Description = game.Description ?? "",
             Price = game.Price,
             ReleasedDate = game.ReleasedDate,
-            Genre = game.Genre,
+            Tags = game.Tags,
         }).ToList();
 
         return response;
@@ -50,7 +50,7 @@ public class GameUseCase : IGameUseCase
             Description = game.Description ?? "",
             Price = game.Price,
             ReleasedDate = game.ReleasedDate,
-            Genre = game.Genre,
+            Tags = game.Tags,
         };
         return response;
     }
@@ -62,7 +62,7 @@ public class GameUseCase : IGameUseCase
             Name = request.Name,
             Description = request.Description,
             Price = request.Price,
-            Genre = request.Genre,
+            Tags = request.Tags,
             ReleasedDate = request.ReleasedDate
         };
 
@@ -75,7 +75,7 @@ public class GameUseCase : IGameUseCase
             Description = game.Description ?? string.Empty,
             Price = game.Price,
             ReleasedDate = game.ReleasedDate,
-            Genre = game.Genre
+            Tags = game.Tags
         };
 
         return response;
@@ -95,11 +95,22 @@ public class GameUseCase : IGameUseCase
             Description = request.Description ?? gameToUpdate.Description,
             Price = request.Price ?? gameToUpdate.Price,
             ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate,
-            Genre = request.Genre ?? gameToUpdate.Genre
+            Tags = request.Tags ?? gameToUpdate.Tags
         };
 
         await _repository.UpdateAsync(game);
 
+        return true;
+    }
+
+    public async Task<bool> UpdateTagsAsync(string id, string[] tags)
+    {
+        var gameToUpdate = await GetByIdAsync(id);
+
+        if (gameToUpdate is null)
+            return false;
+
+        await _repository.UpdateTagsAsync(id, tags);
         return true;
     }
 

@@ -8,7 +8,7 @@ namespace fcg.GameService.API.Repositories.Implementations;
 
 public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
 {
-    private readonly IMongoCollection<T> _collection;
+    protected readonly IMongoCollection<T> _collection;
 
     public BaseRepository(IMongoDbService mongoDbService)
     {
@@ -22,11 +22,6 @@ public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
         _collection = mongoDbService.GetCollection<T>(collectionName);
     }
 
-    public async Task<IList<T>> GetAllAsync()
-    {
-        return await _collection.Find(_ => true).ToListAsync();
-    }
-
     public async Task<T?> GetByIdAsync(string id)
     {
         var result = await _collection.Find(x => x.Id == id).FirstOrDefaultAsync();
@@ -37,11 +32,6 @@ public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
     public async Task CreateAsync(T entity)
     {
         await _collection.InsertOneAsync(entity);
-    }
-
-    public async Task UpdateAsync(T entity)
-    {
-        await _collection.ReplaceOneAsync(x => x.Id == entity.Id, entity);
     }
 
     public async Task DeleteAsync(string id)
