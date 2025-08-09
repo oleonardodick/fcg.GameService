@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using Amazon.SecurityToken.Model;
 using fcg.GameService.API.Attributes;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -7,7 +9,7 @@ namespace fcg.GameService.API.Entities;
 public class Game : BaseEntity
 {
     [BsonElement("name")]
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [BsonElement("description")]
     public string? Description { get; set; }
@@ -19,5 +21,5 @@ public class Game : BaseEntity
     public DateTime ReleasedDate { get; set; }
 
     [BsonElement("tags")]
-    public required string[] Tags { get; set; }
+    public string[] Tags { get; set; } = [];
 }

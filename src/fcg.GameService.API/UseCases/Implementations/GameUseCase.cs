@@ -2,6 +2,7 @@ using fcg.GameService.API.DTOs.Requests;
 using fcg.GameService.API.DTOs.Responses;
 using fcg.GameService.API.Entities;
 using fcg.GameService.API.Exceptions;
+using fcg.GameService.API.Helpers;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Interfaces;
 
@@ -57,13 +58,12 @@ public class GameUseCase : IGameUseCase
 
     public async Task<ResponseGameDTO> CreateAsync(CreateGameDTO request)
     {
-        var game = new Game
-        {
+        var game = new Game {
             Name = request.Name,
             Description = request.Description,
             Price = request.Price,
-            Tags = request.Tags,
-            ReleasedDate = request.ReleasedDate
+            ReleasedDate = request.ReleasedDate,
+            Tags = TagHelper.NormalizeTags(request.Tags)
         };
 
         await _repository.CreateAsync(game);
@@ -88,6 +88,8 @@ public class GameUseCase : IGameUseCase
         if (gameToUpdate is null)
             return false;
 
+        var tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate.Tags);
+
         var game = new Game
         {
             Id = id,
@@ -95,7 +97,7 @@ public class GameUseCase : IGameUseCase
             Description = request.Description ?? gameToUpdate.Description,
             Price = request.Price ?? gameToUpdate.Price,
             ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate,
-            Tags = request.Tags ?? gameToUpdate.Tags
+            Tags = tags
         };
 
         await _repository.UpdateAsync(game);
@@ -109,6 +111,8 @@ public class GameUseCase : IGameUseCase
 
         if (gameToUpdate is null)
             return false;
+
+        tags = TagHelper.NormalizeTags(tags);
 
         await _repository.UpdateTagsAsync(id, tags);
         return true;
