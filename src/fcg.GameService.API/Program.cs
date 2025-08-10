@@ -26,6 +26,8 @@ builder.Services.Configure<MongoDbSettings>(
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameUseCase, GameUseCase>();
+builder.Services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
+builder.Services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
 
 builder.Services.AddProblemDetails(options =>
 {
