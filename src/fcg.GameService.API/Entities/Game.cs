@@ -21,5 +21,5 @@ public class Game : BaseEntity
     public DateTime ReleasedDate { get; set; }
 
     [BsonElement("tags")]
-    public string[] Tags { get; set; } = [];
+    public List<string> Tags { get; set; } = [];
 }

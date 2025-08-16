@@ -9,6 +9,6 @@ public interface IGameUseCase
     Task<ResponseGameDTO?> GetByIdAsync(string id);
     Task<ResponseGameDTO> CreateAsync(CreateGameDTO request);
     Task<bool> UpdateAsync(string id, UpdateGameDTO request);
-    Task<bool> UpdateTagsAsync(string id, string[] tags);
+    Task<bool> UpdateTagsAsync(string id, List<string> tags);
     Task<bool> DeleteAsync(string id);
 }

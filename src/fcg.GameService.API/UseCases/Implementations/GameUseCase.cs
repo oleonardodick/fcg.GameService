@@ -55,10 +55,10 @@ public class GameUseCase : IGameUseCase
         if (gameToUpdate is null)
             return false;
 
-        request.Name = request.Name ?? gameToUpdate.Name;
-        request.Description = request.Description ?? gameToUpdate.Description;
-        request.Price = request.Price ?? gameToUpdate.Price;
-        request.ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate;
+        request.Name ??= gameToUpdate.Name;
+        request.Description ??= gameToUpdate.Description;
+        request.Price ??= gameToUpdate.Price;
+        request.ReleasedDate ??= gameToUpdate.ReleasedDate;
         request.Tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate.Tags);
 
         var game = GameMapper.FromDtoToUpdateEntity(request, id);
@@ -66,7 +66,7 @@ public class GameUseCase : IGameUseCase
         return await _repository.UpdateAsync(game);
     }
 
-    public async Task<bool> UpdateTagsAsync(string id, string[] tags)
+    public async Task<bool> UpdateTagsAsync(string id, List<string> tags)
     {
         if (await GetByIdAsync(id) is null)
             return false;

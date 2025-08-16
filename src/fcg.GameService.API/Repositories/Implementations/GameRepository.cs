@@ -21,7 +21,7 @@ public class GameRepository : BaseRepository<Game>, IGameRepository
         return result.ModifiedCount > 0;
     }
 
-    public async Task<bool> UpdateTagsAsync(string id, string[] tags)
+    public async Task<bool> UpdateTagsAsync(string id, List<string> tags)
     {
         var _id = new ObjectId(id);
         var filter = Builders<Game>.Filter.Eq("_id", _id);

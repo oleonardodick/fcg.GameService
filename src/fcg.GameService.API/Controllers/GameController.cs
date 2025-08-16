@@ -68,7 +68,7 @@ namespace fcg.GameService.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> UpdateTags(string id, [FromBody] string[] tags)
+        public async Task<ActionResult> UpdateTags(string id, [FromBody] List<string> tags)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest(nameof(id), "O ID deve ser informado.");

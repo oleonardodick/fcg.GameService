@@ -7,16 +7,16 @@ public class TagHelper
 {
     private static readonly Regex _spaceRegex = new(@"\s+");
 
-    public static string[] NormalizeTags(string[] tags)
+    public static List<string> NormalizeTags(List<string> tags)
     {
-        if (tags == null || tags.Length == 0)
-            return Array.Empty<string>();
+        if (tags == null || tags.Count == 0)
+            return [];
 
         return tags
             .Where(tag => !string.IsNullOrWhiteSpace(tag))
             .Select(NormalizeTag)
             .Distinct()
-            .ToArray();
+            .ToList();
     }
 
     private static string NormalizeTag(string tag)
