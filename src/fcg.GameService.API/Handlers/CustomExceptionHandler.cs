@@ -1,4 +1,3 @@
-using fcg.GameService.API.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,20 +19,6 @@ public class CustomExceptionHandler : IExceptionHandler
     {
         var problemDetails = exception switch
         {
-            DataValidationException d => new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = d.Error,
-                Detail = d.Message,
-                Type = "Bad Request"
-            },
-            NotFoundException n => new ProblemDetails
-            {
-                Status = StatusCodes.Status404NotFound,
-                Title = n.Error,
-                Detail = n.Message,
-                Type = "NotFound"
-            },
             _ => new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,

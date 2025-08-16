@@ -18,23 +18,23 @@ public class GameLibraryRepository : BaseRepository<GameLibrary>, IGameLibraryRe
         return result;
     }
 
-    public async Task<bool> AddGameToLibraryAsync(string userId, GameAdquired game)
+    public async Task<bool> AddGameToLibraryAsync(string libraryId, GameAdquired game)
     {
-        var filter = Builders<GameLibrary>.Filter.Eq(g => g.UserId, userId);
+        var filter = Builders<GameLibrary>.Filter.Eq(g => g.Id, libraryId);
         var update = Builders<GameLibrary>.Update.Push(g => g.Games, game);
 
         var result = await _collection.UpdateOneAsync(filter, update);
 
-        return true;
+        return result.ModifiedCount > 0;
     }
 
-    public async Task<bool> RemoveGameFromLibraryAsync(string userId, string gameId)
+    public async Task<bool> RemoveGameFromLibraryAsync(string libraryId, string gameId)
     {
-        var filter = Builders<GameLibrary>.Filter.Eq(g => g.UserId, userId);
+        var filter = Builders<GameLibrary>.Filter.Eq(g => g.Id, libraryId);
         var remove = Builders<GameLibrary>.Update.PullFilter(g => g.Games, sub => sub.Id == gameId);
 
         var result = await _collection.UpdateOneAsync(filter, remove);
 
-        return true;
+        return result.ModifiedCount > 0;
     }
 }

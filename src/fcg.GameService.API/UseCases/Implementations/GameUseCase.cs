@@ -1,7 +1,6 @@
 using fcg.GameService.API.DTOs.Requests;
 using fcg.GameService.API.DTOs.Responses;
 using fcg.GameService.API.Entities;
-using fcg.GameService.API.Exceptions;
 using fcg.GameService.API.Helpers;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Interfaces;
@@ -39,10 +38,7 @@ public class GameUseCase : IGameUseCase
         var game = await _repository.GetByIdAsync(id);
 
         if (game == null)
-            throw new NotFoundException(
-                "Jogo não encontrado",
-                $"Não foi encontrado o jogo com o ID {id}"
-            );
+            return null;
 
         var response = new ResponseGameDTO
         {
@@ -85,47 +81,34 @@ public class GameUseCase : IGameUseCase
     {
         var gameToUpdate = await GetByIdAsync(id);
 
-        if (gameToUpdate is null)
-            return false;
-
-        var tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate.Tags);
+        var tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate!.Tags);
 
         var game = new Game
         {
             Id = id,
-            Name = request.Name ?? gameToUpdate.Name,
-            Description = request.Description ?? gameToUpdate.Description,
-            Price = request.Price ?? gameToUpdate.Price,
-            ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate,
+            Name = request.Name ?? gameToUpdate!.Name,
+            Description = request.Description ?? gameToUpdate!.Description,
+            Price = request.Price ?? gameToUpdate!.Price,
+            ReleasedDate = request.ReleasedDate ?? gameToUpdate!.ReleasedDate,
             Tags = tags
         };
 
-        await _repository.UpdateAsync(game);
-
-        return true;
+        return await _repository.UpdateAsync(game);
     }
 
     public async Task<bool> UpdateTagsAsync(string id, string[] tags)
     {
-        var gameToUpdate = await GetByIdAsync(id);
-
-        if (gameToUpdate is null)
-            return false;
+        await GetByIdAsync(id);
 
         tags = TagHelper.NormalizeTags(tags);
 
-        await _repository.UpdateTagsAsync(id, tags);
-        return true;
+        return await _repository.UpdateTagsAsync(id, tags);
     }
 
     public async Task<bool> DeleteAsync(string id)
     {
-        var gameToDelete = await GetByIdAsync(id);
+        await GetByIdAsync(id);
 
-        if (gameToDelete is null)
-            return false;
-
-        await _repository.DeleteAsync(id);
-        return true;
+        return await _repository.DeleteAsync(id);
     }
 }

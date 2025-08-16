@@ -1,6 +1,6 @@
 using fcg.GameService.API.DTOs.GameLibrary;
 using fcg.GameService.API.DTOs.GameLibrary.Requests;
-using fcg.GameService.API.Entities;
+using fcg.GameService.API.DTOs.Responses;
 using fcg.GameService.API.UseCases.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +8,8 @@ namespace fcg.GameService.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     public class GameLibraryController : ControllerBase
     {
         private readonly IGameLibraryUseCase _gameLibraryUseCase;
@@ -17,7 +19,20 @@ namespace fcg.GameService.API.Controllers
             _gameLibraryUseCase = gameLibraryUseCase;
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ResponseGameLibraryDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _gameLibraryUseCase.GetByIdAsync(id);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
         [HttpGet("user/{userId}")]
+        [ProducesResponseType(typeof(ResponseGameLibraryDTO), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByUserId(string userId)
         {
             var result = await _gameLibraryUseCase.GetByUserIdAsync(userId);
@@ -26,24 +41,29 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(ResponseGameLibraryDTO), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] CreateGameLibraryDTO gameLibrary)
         {
             var createdGameLibrary = await _gameLibraryUseCase.CreateAsync(gameLibrary);
             return Ok(createdGameLibrary);
         }
 
-        [HttpPost("adquireGame")]
+        [HttpPost("addGame")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> AddGame([FromBody] AddGameToLibraryDTO game)
         {
-            var gameAdded = await _gameLibraryUseCase.AddGameToLibraryAsync(game);
-            return NoContent();
+            var added = await _gameLibraryUseCase.AddGameToLibraryAsync(game);
+
+            return added ? NoContent() : NotFound();
         }
 
-        [HttpPost("removeGame")]
+        [HttpDelete("removeGame")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> RemoveGame([FromBody] RemoveGameFromLibraryDTO game)
         {
-            var gameRemoved = await _gameLibraryUseCase.RemoveGameFromLibraryAsync(game);
-            return NoContent();
+            var removed = await _gameLibraryUseCase.RemoveGameFromLibraryAsync(game);
+
+            return removed ? NoContent() : NotFound();
         }
     }
 }

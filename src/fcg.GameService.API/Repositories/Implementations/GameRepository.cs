@@ -15,17 +15,20 @@ public class GameRepository : BaseRepository<Game>, IGameRepository
         return await _collection.Find(_ => true).ToListAsync();
     }
 
-    public async Task UpdateAsync(Game game)
+    public async Task<bool> UpdateAsync(Game game)
     {
-        await _collection.ReplaceOneAsync(x => x.Id == game.Id, game);
+        var result = await _collection.ReplaceOneAsync(x => x.Id == game.Id, game);
+        return result.ModifiedCount > 0;
     }
 
-    public async Task UpdateTagsAsync(string id, string[] tags)
+    public async Task<bool> UpdateTagsAsync(string id, string[] tags)
     {
         var _id = new ObjectId(id);
         var filter = Builders<Game>.Filter.Eq("_id", _id);
         var update = Builders<Game>.Update.Set("tags", tags);
 
-        await _collection.UpdateOneAsync(filter, update);        
+        var result = await _collection.UpdateOneAsync(filter, update);
+
+        return result.ModifiedCount > 0;      
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using fcg.GameService.API.Handlers;
 using fcg.GameService.API.Infrastructure.Configurations;
 using fcg.GameService.API.Infrastructure.Services;
@@ -6,6 +7,7 @@ using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Implementations;
 using fcg.GameService.API.UseCases.Interfaces;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,26 +31,34 @@ builder.Services.AddScoped<IGameUseCase, GameUseCase>();
 builder.Services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
 builder.Services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
 
-builder.Services.AddProblemDetails(options =>
+builder.Services.AddProblemDetails();
+
+// builder.Services.AddProblemDetails(options =>
+// {
+//     options.CustomizeProblemDetails = context =>
+//     {
+//         context.ProblemDetails.Instance =
+//             $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
+
+//         context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+//         context.ProblemDetails.Extensions["timestamp"] = DateTime.UtcNow;
+//     };
+// });
+
+builder.Services.Configure<JsonOptions>(options =>
 {
-    options.CustomizeProblemDetails = context =>
-    {
-        context.ProblemDetails.Instance =
-            $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
-
-        context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
-
-        var activity = context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
-        context.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
-    };
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.WriteIndented = true;
 });
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
+builder.Services.AddSwaggerConfiguration();
 
 var app = builder.Build();
 
@@ -60,6 +70,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseSwaggerConfiguration();
 
 app.UseAuthorization();
 

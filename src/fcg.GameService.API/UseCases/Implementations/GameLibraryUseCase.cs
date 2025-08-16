@@ -2,7 +2,6 @@ using fcg.GameService.API.DTOs.GameLibrary;
 using fcg.GameService.API.DTOs.GameLibrary.Requests;
 using fcg.GameService.API.DTOs.Responses;
 using fcg.GameService.API.Entities;
-using fcg.GameService.API.Exceptions;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Interfaces;
 
@@ -17,15 +16,25 @@ public class GameLibraryUseCase : IGameLibraryUseCase
         _repository = repository;
     }
 
+    public async Task<ResponseGameLibraryDTO?> GetByIdAsync(string id)
+    {
+        var result = await _repository.GetByIdAsync(id);
+
+        return new ResponseGameLibraryDTO
+        {
+            Id = result.Id,
+            UserId = result.UserId,
+            Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
+            {
+                Id = gameAdquired.Id,
+                Name = gameAdquired.Name
+            }).ToList()
+        };
+    }
+
     public async Task<ResponseGameLibraryDTO> GetByUserIdAsync(string userId)
     {
         var result = await _repository.GetByUserIdAsync(userId);
-
-        if (result == null)
-            throw new NotFoundException(
-                "Livraria de Jogos não encontrada",
-                $"Não foi encontrada a livraria de jogos do usuário {userId}"
-            );
 
         return new ResponseGameLibraryDTO
         {
@@ -58,17 +67,21 @@ public class GameLibraryUseCase : IGameLibraryUseCase
 
     public async Task<bool> AddGameToLibraryAsync(AddGameToLibraryDTO game)
     {
+        await GetByIdAsync(game.LibraryId);
+
         var gameAdquired = new GameAdquired
         {
             Id = game.GameId,
             Name = game.GameName
         };
 
-        return await _repository.AddGameToLibraryAsync(game.GameId, gameAdquired);
+        return await _repository.AddGameToLibraryAsync(game.LibraryId, gameAdquired);
     }
 
     public async Task<bool> RemoveGameFromLibraryAsync(RemoveGameFromLibraryDTO game)
     {
-        return await _repository.RemoveGameFromLibraryAsync(game.UserId, game.GameId);
+        await GetByIdAsync(game.LibraryId);
+        
+        return await _repository.RemoveGameFromLibraryAsync(game.LibraryId, game.GameId);
     }
 }

@@ -34,8 +34,10 @@ public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
         await _collection.InsertOneAsync(entity);
     }
 
-    public async Task DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(string id)
     {
-        await _collection.DeleteOneAsync(x => x.Id == id);
+        var result = await _collection.DeleteOneAsync(x => x.Id == id);
+
+        return result.DeletedCount > 0;
     }
 }

@@ -1,4 +1,6 @@
 using fcg.GameService.API.DTOs.Requests;
+using fcg.GameService.API.DTOs.Responses;
+using fcg.GameService.API.ProblemsDefinitions;
 using fcg.GameService.API.UseCases.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +8,9 @@ namespace fcg.GameService.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GameController : ControllerBase
+    [Produces("application/json")]
+    [Consumes("application/json")]
+    public class GameController : BaseApiController
     {
         private readonly IGameUseCase _gameUseCase;
 
@@ -16,28 +20,44 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [ProducesResponseType(typeof(IList<ResponseGameDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IList<ResponseGameDTO>>> GetAll()
         {
             var games = await _gameUseCase.GetAllAsync();
-            return Ok(games);
+            return Success(games);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ResponseGameDTO>> GetById(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest("id", "O ID deve ser informado.");
+            }
+
             var game = await _gameUseCase.GetByIdAsync(id);
 
-            return game is null ? NotFound() : Ok(game);
+            if (game == null)
+            {
+                return NotFound("Jogo não encontrado");
+            }
+
+            return Success(game);
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] CreateGameDTO game)
         {
             var createdGame = await _gameUseCase.CreateAsync(game);
-            return Ok(createdGame);
+            return Created($"/api/game/{createdGame.Id}", createdGame);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateGameDTO game)
         {
             var response = await _gameUseCase.UpdateAsync(id, game);
@@ -46,6 +66,7 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpPatch("/tags/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateTags(string id, [FromBody] string[] tags)
         {
             var response = await _gameUseCase.UpdateTagsAsync(id, tags);
@@ -53,6 +74,7 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(string id)
         {
             var response = await _gameUseCase.DeleteAsync(id);
