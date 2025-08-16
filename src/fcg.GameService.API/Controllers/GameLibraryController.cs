@@ -62,24 +62,36 @@ namespace fcg.GameService.API.Controllers
             );
         }
 
-        [HttpPost("addGame")]
+        [HttpPost("{libraryId}/addGame")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddGame([FromBody] AddGameToLibraryDTO game)
+        public async Task<IActionResult> AddGame(string libraryId, [FromBody] AddGameToLibraryDTO game)
         {
-            var success = await _gameLibraryUseCase.AddGameToLibraryAsync(game);
+            if (string.IsNullOrWhiteSpace(libraryId))
+                return BadRequest(nameof(libraryId), "O id da biblioteca deve ser informado.");
+
+            if (await _gameLibraryUseCase.ExistsGameOnLibraryAsync(libraryId, game.Id))
+                return BadRequest(nameof(game.Id), "Jogo já cadastrado");
+
+            var success = await _gameLibraryUseCase.AddGameToLibraryAsync(libraryId, game);
 
             return success ? NoContent() : NotFound("Biblioteca de jogos não encontrada");
         }
 
-        [HttpDelete("removeGame")]
+        [HttpDelete("{libraryId}/removeGame")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RemoveGame([FromBody] RemoveGameFromLibraryDTO game)
+        public async Task<IActionResult> RemoveGame(string libraryId, [FromBody] RemoveGameFromLibraryDTO game)
         {
-            var success = await _gameLibraryUseCase.RemoveGameFromLibraryAsync(game);
+            if (string.IsNullOrWhiteSpace(libraryId))
+                return BadRequest(nameof(libraryId), "O id da biblioteca deve ser informado.");
+
+            if (!await _gameLibraryUseCase.ExistsGameOnLibraryAsync(libraryId, game.Id))
+                return NotFound("Jogo não cadastrado");
+
+            var success = await _gameLibraryUseCase.RemoveGameFromLibraryAsync(libraryId, game);
 
             return success ? NoContent() : NotFound("Biblioteca de jogos não encontrada");
         }

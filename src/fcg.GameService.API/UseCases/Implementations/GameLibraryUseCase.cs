@@ -2,6 +2,7 @@ using fcg.GameService.API.DTOs.GameLibrary;
 using fcg.GameService.API.DTOs.GameLibrary.Requests;
 using fcg.GameService.API.DTOs.Responses;
 using fcg.GameService.API.Entities;
+using fcg.GameService.API.Mappers;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Interfaces;
 
@@ -23,16 +24,7 @@ public class GameLibraryUseCase : IGameLibraryUseCase
         if (result is null)
             return null;
 
-        return new ResponseGameLibraryDTO
-            {
-                Id = result.Id,
-                UserId = result.UserId,
-                Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
-                {
-                    Id = gameAdquired.Id,
-                    Name = gameAdquired.Name
-                }).ToList()
-            };
+        return GameLibraryMapper.FromEntityToDto(result);
     }
 
     public async Task<ResponseGameLibraryDTO?> GetByUserIdAsync(string userId)
@@ -42,54 +34,38 @@ public class GameLibraryUseCase : IGameLibraryUseCase
         if (result is null)
             return null;
 
-        return new ResponseGameLibraryDTO
-            {
-                Id = result.Id,
-                UserId = result.UserId,
-                Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
-                {
-                    Id = gameAdquired.Id,
-                    Name = gameAdquired.Name
-                }).ToList()
-            };
+        return GameLibraryMapper.FromEntityToDto(result);
+
     }
     public async Task<ResponseGameLibraryDTO> CreateAsync(CreateGameLibraryDTO request)
     {
-        var gameLibrary = new GameLibrary
-        {
-            UserId = request.userId
-        };
+        var gameLibrary = GameLibraryMapper.FromDtoToEntity(request);
 
         await _repository.CreateAsync(gameLibrary);
 
-        var response = new ResponseGameLibraryDTO
-        {
-            Id = gameLibrary.Id,
-            UserId = gameLibrary.UserId,
-        };
+        var response = GameLibraryMapper.FromEntityToDto(gameLibrary);
 
         return response;
     }
 
-    public async Task<bool> AddGameToLibraryAsync(AddGameToLibraryDTO game)
+    public async Task<bool> AddGameToLibraryAsync(string libraryId, AddGameToLibraryDTO game)
     {
-        if (await GetByIdAsync(game.LibraryId) is null)
+        if (await GetByIdAsync(libraryId) is null)
             return false;
 
-        var gameAdquired = new GameAdquired
-        {
-            Id = game.GameId,
-            Name = game.GameName
-        };
+        var gameAdquired = LibraryGamesMapper.FromDtoToEntity(game);
 
-        return await _repository.AddGameToLibraryAsync(game.LibraryId, gameAdquired);
+        return await _repository.AddGameToLibraryAsync(libraryId, gameAdquired);
     }
 
-    public async Task<bool> RemoveGameFromLibraryAsync(RemoveGameFromLibraryDTO game)
+    public async Task<bool> RemoveGameFromLibraryAsync(string libraryId, RemoveGameFromLibraryDTO game)
     {
-        if (await GetByIdAsync(game.LibraryId) is null)
+        if (await GetByIdAsync(libraryId) is null)
             return false;
-        
-        return await _repository.RemoveGameFromLibraryAsync(game.LibraryId, game.GameId);
+
+        return await _repository.RemoveGameFromLibraryAsync(libraryId, game.Id);
     }
+
+    public async Task<bool> ExistsGameOnLibraryAsync(string libraryId, string gameId) =>
+        await _repository.ExistsGameOnLibraryAsync(libraryId, gameId);
 }

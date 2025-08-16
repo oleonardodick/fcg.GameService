@@ -1,7 +1,7 @@
 using fcg.GameService.API.DTOs.Requests;
 using fcg.GameService.API.DTOs.Responses;
-using fcg.GameService.API.Entities;
 using fcg.GameService.API.Helpers;
+using fcg.GameService.API.Mappers;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Interfaces;
 
@@ -20,15 +20,7 @@ public class GameUseCase : IGameUseCase
     {
         var games = await _repository.GetAllAsync();
 
-        var response = games.Select(game => new ResponseGameDTO
-        {
-            Id = game.Id,
-            Name = game.Name,
-            Description = game.Description ?? "",
-            Price = game.Price,
-            ReleasedDate = game.ReleasedDate,
-            Tags = game.Tags,
-        }).ToList();
+        var response = GameMapper.FromListEntityToListDto(games);
 
         return response;
     }
@@ -40,39 +32,18 @@ public class GameUseCase : IGameUseCase
         if (game == null)
             return null;
 
-        var response = new ResponseGameDTO
-        {
-            Id = game.Id,
-            Name = game.Name,
-            Description = game.Description ?? "",
-            Price = game.Price,
-            ReleasedDate = game.ReleasedDate,
-            Tags = game.Tags,
-        };
+        var response = GameMapper.FromEntityToDto(game);
+
         return response;
     }
 
     public async Task<ResponseGameDTO> CreateAsync(CreateGameDTO request)
     {
-        var game = new Game {
-            Name = request.Name,
-            Description = request.Description,
-            Price = request.Price,
-            ReleasedDate = request.ReleasedDate,
-            Tags = TagHelper.NormalizeTags(request.Tags)
-        };
+        var game = GameMapper.FromDtoToEntity(request);
 
         await _repository.CreateAsync(game);
 
-        var response = new ResponseGameDTO
-        {
-            Id = game.Id,
-            Name = game.Name,
-            Description = game.Description ?? string.Empty,
-            Price = game.Price,
-            ReleasedDate = game.ReleasedDate,
-            Tags = game.Tags
-        };
+        var response = GameMapper.FromEntityToDto(game);
 
         return response;
     }
@@ -84,17 +55,13 @@ public class GameUseCase : IGameUseCase
         if (gameToUpdate is null)
             return false;
 
-        var tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate.Tags);
+        request.Name = request.Name ?? gameToUpdate.Name;
+        request.Description = request.Description ?? gameToUpdate.Description;
+        request.Price = request.Price ?? gameToUpdate.Price;
+        request.ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate;
+        request.Tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate.Tags);
 
-        var game = new Game
-        {
-            Id = id,
-            Name = request.Name ?? gameToUpdate.Name,
-            Description = request.Description ?? gameToUpdate.Description,
-            Price = request.Price ?? gameToUpdate.Price,
-            ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate,
-            Tags = tags
-        };
+        var game = GameMapper.FromDtoToUpdateEntity(request, id);
 
         return await _repository.UpdateAsync(game);
     }

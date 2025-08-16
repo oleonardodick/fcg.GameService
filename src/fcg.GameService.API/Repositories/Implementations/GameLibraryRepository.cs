@@ -37,4 +37,14 @@ public class GameLibraryRepository : BaseRepository<GameLibrary>, IGameLibraryRe
 
         return result.ModifiedCount > 0;
     }
+
+    public async Task<bool> ExistsGameOnLibraryAsync(string libraryId, string gameId)
+    {
+        var filter = Builders<GameLibrary>.Filter.And(
+            Builders<GameLibrary>.Filter.Eq(gl => gl.Id, libraryId),
+            Builders<GameLibrary>.Filter.ElemMatch(gl => gl.Games, g => g.Id == gameId)
+        );
+
+        return await _collection.Find(filter).AnyAsync();
+    }
 }
