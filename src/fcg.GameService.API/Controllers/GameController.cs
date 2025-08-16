@@ -34,52 +34,61 @@ namespace fcg.GameService.API.Controllers
         public async Task<ActionResult<ResponseGameDTO>> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-            {
-                return BadRequest("id", "O ID deve ser informado.");
-            }
+                return BadRequest(nameof(id), "O ID deve ser informado.");
 
             var game = await _gameUseCase.GetByIdAsync(id);
 
-            if (game == null)
-            {
-                return NotFound("Jogo não encontrado");
-            }
-
-            return Success(game);
+            return game is null ? NotFound("Jogo não encontrado.") : Success(game);
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] CreateGameDTO game)
+        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Create([FromBody] CreateGameDTO game)
         {
             var createdGame = await _gameUseCase.CreateAsync(game);
-            return Created($"/api/game/{createdGame.Id}", createdGame);
+            return CreatedAtAction(nameof(GetById), new { id = createdGame.Id }, createdGame);
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateGameDTO game)
+        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Update(string id, [FromBody] UpdateGameDTO game)
         {
-            var response = await _gameUseCase.UpdateAsync(id, game);
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(nameof(id), "O ID deve ser enviado");
 
-            return response ? NoContent() : NotFound();
+            var success = await _gameUseCase.UpdateAsync(id, game);
+
+            return success ? NoContent() : NotFound("Jogo não encontrado.");
         }
 
         [HttpPatch("/tags/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> UpdateTags(string id, [FromBody] string[] tags)
+        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> UpdateTags(string id, [FromBody] string[] tags)
         {
-            var response = await _gameUseCase.UpdateTagsAsync(id, tags);
-            return response ? NoContent() : NotFound();
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(nameof(id), "O ID deve ser informado.");
+
+            var success = await _gameUseCase.UpdateTagsAsync(id, tags);
+            return success ? NoContent() : NotFound("Jogo não encontrado.");
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Delete(string id)
+        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Delete(string id)
         {
-            var response = await _gameUseCase.DeleteAsync(id);
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(nameof(id), "O ID deve ser informado.");
 
-            return response ? NoContent() : NotFound();
+            var success = await _gameUseCase.DeleteAsync(id);
+
+            return success ? NoContent() : NotFound("Jogo não encontrado.");
         }
     }
 }

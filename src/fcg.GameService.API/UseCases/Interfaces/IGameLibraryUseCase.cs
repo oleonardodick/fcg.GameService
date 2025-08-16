@@ -7,7 +7,7 @@ namespace fcg.GameService.API.UseCases.Interfaces;
 public interface IGameLibraryUseCase
 {
     Task<ResponseGameLibraryDTO?> GetByIdAsync(string id);
-    Task<ResponseGameLibraryDTO> GetByUserIdAsync(string userId);
+    Task<ResponseGameLibraryDTO?> GetByUserIdAsync(string userId);
     Task<ResponseGameLibraryDTO> CreateAsync(CreateGameLibraryDTO request);
     Task<bool> AddGameToLibraryAsync(AddGameToLibraryDTO game);
     Task<bool> RemoveGameFromLibraryAsync(RemoveGameFromLibraryDTO game);

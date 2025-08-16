@@ -20,32 +20,38 @@ public class GameLibraryUseCase : IGameLibraryUseCase
     {
         var result = await _repository.GetByIdAsync(id);
 
+        if (result is null)
+            return null;
+
         return new ResponseGameLibraryDTO
-        {
-            Id = result.Id,
-            UserId = result.UserId,
-            Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
             {
-                Id = gameAdquired.Id,
-                Name = gameAdquired.Name
-            }).ToList()
-        };
+                Id = result.Id,
+                UserId = result.UserId,
+                Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
+                {
+                    Id = gameAdquired.Id,
+                    Name = gameAdquired.Name
+                }).ToList()
+            };
     }
 
-    public async Task<ResponseGameLibraryDTO> GetByUserIdAsync(string userId)
+    public async Task<ResponseGameLibraryDTO?> GetByUserIdAsync(string userId)
     {
         var result = await _repository.GetByUserIdAsync(userId);
 
+        if (result is null)
+            return null;
+
         return new ResponseGameLibraryDTO
-        {
-            Id = result.Id,
-            UserId = result.UserId,
-            Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
             {
-                Id = gameAdquired.Id,
-                Name = gameAdquired.Name
-            }).ToList()
-        };
+                Id = result.Id,
+                UserId = result.UserId,
+                Games = result.Games.Select(gameAdquired => new ResponseGameAdquiredDTO
+                {
+                    Id = gameAdquired.Id,
+                    Name = gameAdquired.Name
+                }).ToList()
+            };
     }
     public async Task<ResponseGameLibraryDTO> CreateAsync(CreateGameLibraryDTO request)
     {
@@ -67,7 +73,8 @@ public class GameLibraryUseCase : IGameLibraryUseCase
 
     public async Task<bool> AddGameToLibraryAsync(AddGameToLibraryDTO game)
     {
-        await GetByIdAsync(game.LibraryId);
+        if (await GetByIdAsync(game.LibraryId) is null)
+            return false;
 
         var gameAdquired = new GameAdquired
         {
@@ -80,7 +87,8 @@ public class GameLibraryUseCase : IGameLibraryUseCase
 
     public async Task<bool> RemoveGameFromLibraryAsync(RemoveGameFromLibraryDTO game)
     {
-        await GetByIdAsync(game.LibraryId);
+        if (await GetByIdAsync(game.LibraryId) is null)
+            return false;
         
         return await _repository.RemoveGameFromLibraryAsync(game.LibraryId, game.GameId);
     }

@@ -81,15 +81,18 @@ public class GameUseCase : IGameUseCase
     {
         var gameToUpdate = await GetByIdAsync(id);
 
-        var tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate!.Tags);
+        if (gameToUpdate is null)
+            return false;
+
+        var tags = TagHelper.NormalizeTags(request.Tags ?? gameToUpdate.Tags);
 
         var game = new Game
         {
             Id = id,
-            Name = request.Name ?? gameToUpdate!.Name,
-            Description = request.Description ?? gameToUpdate!.Description,
-            Price = request.Price ?? gameToUpdate!.Price,
-            ReleasedDate = request.ReleasedDate ?? gameToUpdate!.ReleasedDate,
+            Name = request.Name ?? gameToUpdate.Name,
+            Description = request.Description ?? gameToUpdate.Description,
+            Price = request.Price ?? gameToUpdate.Price,
+            ReleasedDate = request.ReleasedDate ?? gameToUpdate.ReleasedDate,
             Tags = tags
         };
 
@@ -98,7 +101,8 @@ public class GameUseCase : IGameUseCase
 
     public async Task<bool> UpdateTagsAsync(string id, string[] tags)
     {
-        await GetByIdAsync(id);
+        if (await GetByIdAsync(id) is null)
+            return false;
 
         tags = TagHelper.NormalizeTags(tags);
 
@@ -107,7 +111,8 @@ public class GameUseCase : IGameUseCase
 
     public async Task<bool> DeleteAsync(string id)
     {
-        await GetByIdAsync(id);
+        if (await GetByIdAsync(id) is null)
+            return false;
 
         return await _repository.DeleteAsync(id);
     }
