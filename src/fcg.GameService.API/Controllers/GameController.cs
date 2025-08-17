@@ -95,7 +95,7 @@ namespace fcg.GameService.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> UpdateTags(string id, [FromBody] List<string> tags)
+        public async Task<ActionResult> UpdateTags(string id, [FromBody] UpdateTagsDTO tags)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest(new ErrorResponseDTO

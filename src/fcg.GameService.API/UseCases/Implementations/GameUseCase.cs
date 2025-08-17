@@ -66,14 +66,14 @@ public class GameUseCase : IGameUseCase
         return await _repository.UpdateAsync(game);
     }
 
-    public async Task<bool> UpdateTagsAsync(string id, List<string> tags)
+    public async Task<bool> UpdateTagsAsync(string id, UpdateTagsDTO tags)
     {
         if (await GetByIdAsync(id) is null)
             return false;
 
-        tags = TagHelper.NormalizeTags(tags);
+        tags.Tags = TagHelper.NormalizeTags(tags.Tags);
 
-        return await _repository.UpdateTagsAsync(id, tags);
+        return await _repository.UpdateTagsAsync(id, tags.Tags);
     }
 
     public async Task<bool> DeleteAsync(string id)

@@ -183,9 +183,8 @@ public class GameUseCaseTests
     {
         //Arrange
         var game = GameFaker.FakeListOfGame(1)[0];
-        var request = new List<string>{
-            "new-tag",
-            "other-tag"
+        var request = new UpdateTagsDTO {
+            Tags = ["new-tag", "other-tag"]
         };
 
         _repository
@@ -210,9 +209,8 @@ public class GameUseCaseTests
     public async Task UpdateTagsAsync_ShouldReturnFalse()
     {
         //Arrange
-        var request = new List<string>{
-            "new-tag",
-            "other-tag"
+        var request = new UpdateTagsDTO {
+            Tags = ["new-tag", "other-tag"]
         };
 
         _repository
