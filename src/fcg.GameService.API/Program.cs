@@ -1,11 +1,15 @@
 using System.Text.Json;
+using fcg.GameService.API.DTOs.Requests;
 using fcg.GameService.API.Handlers;
 using fcg.GameService.API.Infrastructure.Configurations;
 using fcg.GameService.API.Infrastructure.Services;
+using fcg.GameService.API.Middlewares;
 using fcg.GameService.API.Repositories.Implementations;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Implementations;
 using fcg.GameService.API.UseCases.Interfaces;
+using fcg.GameService.API.Validators;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 
@@ -28,22 +32,12 @@ builder.Services.Configure<MongoDbSettings>(
 builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameUseCase, GameUseCase>();
+builder.Services.AddScoped<IValidator<CreateGameDTO>, CreateGameDTOValidator>();
+builder.Services.AddScoped<IValidator<UpdateGameDTO>, UpdateGameDTOValidator>();
 builder.Services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
 builder.Services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
 
 builder.Services.AddProblemDetails();
-
-// builder.Services.AddProblemDetails(options =>
-// {
-//     options.CustomizeProblemDetails = context =>
-//     {
-//         context.ProblemDetails.Instance =
-//             $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
-
-//         context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
-//         context.ProblemDetails.Extensions["timestamp"] = DateTime.UtcNow;
-//     };
-// });
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -74,6 +68,8 @@ app.UseHttpsRedirection();
 app.UseSwaggerConfiguration();
 
 app.UseAuthorization();
+
+app.UseMiddleware<BodyValidationMiddleware>();
 
 app.MapControllers();
 

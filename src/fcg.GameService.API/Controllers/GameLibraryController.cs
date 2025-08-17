@@ -1,3 +1,4 @@
+using fcg.GameService.API.DTOs;
 using fcg.GameService.API.DTOs.GameLibrary;
 using fcg.GameService.API.DTOs.GameLibrary.Requests;
 using fcg.GameService.API.DTOs.Responses;
@@ -27,7 +28,11 @@ namespace fcg.GameService.API.Controllers
         public async Task<ActionResult<ResponseGameLibraryDTO>> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return BadRequest(nameof(id), "O ID deve ser informado.");
+                return BadRequest(new ErrorResponseDTO
+                {
+                    Property = nameof(id),
+                    Errors = ["O Id deve ser informado."]
+                });
 
             var gameLibrary = await _gameLibraryUseCase.GetByIdAsync(id);
 
@@ -41,7 +46,11 @@ namespace fcg.GameService.API.Controllers
         public async Task<ActionResult<ResponseGameLibraryDTO>> GetByUserId(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest(nameof(userId), "O id do usuário deve ser informado.");
+                return BadRequest(new ErrorResponseDTO
+                {
+                    Property = nameof(userId),
+                    Errors = ["O Id do usuário deve ser informado."]
+                });
                 
             var gameLibrary = await _gameLibraryUseCase.GetByUserIdAsync(userId);
 
@@ -69,10 +78,18 @@ namespace fcg.GameService.API.Controllers
         public async Task<IActionResult> AddGame(string libraryId, [FromBody] AddGameToLibraryDTO game)
         {
             if (string.IsNullOrWhiteSpace(libraryId))
-                return BadRequest(nameof(libraryId), "O id da biblioteca deve ser informado.");
+                return BadRequest(new ErrorResponseDTO
+                {
+                    Property = nameof(libraryId),
+                    Errors = ["O Id da biblioteca deve ser informada."]
+                });
 
             if (await _gameLibraryUseCase.ExistsGameOnLibraryAsync(libraryId, game.Id))
-                return BadRequest(nameof(game.Id), "Jogo já cadastrado");
+                return BadRequest(new ErrorResponseDTO
+                {
+                    Property = nameof(game.Id),
+                    Errors = ["Jogo já cadastrado."]
+                });
 
             var success = await _gameLibraryUseCase.AddGameToLibraryAsync(libraryId, game);
 
@@ -86,7 +103,11 @@ namespace fcg.GameService.API.Controllers
         public async Task<IActionResult> RemoveGame(string libraryId, [FromBody] RemoveGameFromLibraryDTO game)
         {
             if (string.IsNullOrWhiteSpace(libraryId))
-                return BadRequest(nameof(libraryId), "O id da biblioteca deve ser informado.");
+                return BadRequest(new ErrorResponseDTO
+                {
+                    Property = nameof(libraryId),
+                    Errors = ["O Id da biblioteca deve ser informado."]
+                });
 
             if (!await _gameLibraryUseCase.ExistsGameOnLibraryAsync(libraryId, game.Id))
                 return NotFound("Jogo não cadastrado");

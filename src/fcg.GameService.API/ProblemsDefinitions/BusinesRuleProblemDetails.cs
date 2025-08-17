@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using fcg.GameService.API.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fcg.GameService.API.ProblemsDefinitions;
@@ -13,11 +14,16 @@ public class BusinesRuleProblemDetails : ProblemDetails
         Detail = "A requisição contém dados inválidos.";
     }
 
-    public BusinesRuleProblemDetails(IDictionary<string, string[]> errors) : this()
+    public BusinesRuleProblemDetails(List<ErrorResponseDTO> errors) : this()
     {
         Errors = errors;
     }
 
+    public BusinesRuleProblemDetails(ErrorResponseDTO error) : this()
+    {
+        Errors = [error];
+    }
+
     [JsonPropertyName("errors")]
-    public IDictionary<string, string[]> Errors { get; set; } = new Dictionary<string, string[]>();
+    public IList<ErrorResponseDTO> Errors { get; set; } = [];
 }

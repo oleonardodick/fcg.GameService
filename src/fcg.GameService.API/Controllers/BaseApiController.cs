@@ -1,3 +1,4 @@
+using fcg.GameService.API.DTOs;
 using fcg.GameService.API.ProblemsDefinitions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,21 +17,16 @@ public abstract class BaseApiController : ControllerBase
         return NotFound(problemDetails);
     }
 
-    protected ActionResult BadRequest(IDictionary<string, string[]> errors)
+    protected ActionResult BadRequest(List<ErrorResponseDTO> errors)
     {
         var problemDetails = new BusinesRuleProblemDetails(errors);
         EnrichProblemDetails(problemDetails);
         return BadRequest(problemDetails);
     }
 
-    protected ActionResult BadRequest(string field, string error)
+    protected ActionResult BadRequest(ErrorResponseDTO error)
     {
-        var errors = new Dictionary<string, string[]>
-        {
-            [field] = [error]
-        };
-
-        var problemDetails = new BusinesRuleProblemDetails(errors);
+        var problemDetails = new BusinesRuleProblemDetails(error);
         EnrichProblemDetails(problemDetails);
 
         return BadRequest(problemDetails);
