@@ -34,6 +34,7 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameUseCase, GameUseCase>();
 builder.Services.AddScoped<IValidator<CreateGameDTO>, CreateGameDTOValidator>();
 builder.Services.AddScoped<IValidator<UpdateGameDTO>, UpdateGameDTOValidator>();
+builder.Services.AddScoped<IValidator<UpdateTagsDTO>, UpdateTagsDTOValidator>();
 builder.Services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
 builder.Services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
 

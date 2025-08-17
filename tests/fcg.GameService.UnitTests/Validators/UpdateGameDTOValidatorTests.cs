@@ -90,6 +90,26 @@ public class UpdateGameDTOValidatorTests
     }
 
     [Trait("Module", "UpdateGameDTOValidator")]
+    [Theory(DisplayName = "Validate_ShouldReturnErrorWhenSomeTagIsInWrongFormat")]
+    [InlineData("simulacao", "")]
+    [InlineData(null, "esporte")]
+    [InlineData("", " ", "rpg")]
+    public void Validate_ShouldReturnErrorWhenSomeTagIsInWrongFormat(params string[] tags)
+    {
+        //Arrange
+        var request = new UpdateGameDTO
+        {
+            Tags = tags.ToList()
+        };
+
+        //Act
+        var result = _validator.TestValidate(request);
+
+        //Assert
+        result.ShouldHaveValidationErrorFor(g => g.Tags).WithErrorMessage("A tag não pode ser nula, vazia ou com espaço em branco.");
+    }
+
+    [Trait("Module", "UpdateGameDTOValidator")]
     [Theory(DisplayName = "Validate_ShouldPassTheValidation")]
     [MemberData(nameof (TestData.GenerateValidData),MemberType =typeof(TestData))]
     public void Validate_ShouldPassTheValidation(UpdateGameDTO request)

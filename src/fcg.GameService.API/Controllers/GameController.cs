@@ -18,15 +18,18 @@ namespace fcg.GameService.API.Controllers
         private readonly IGameUseCase _gameUseCase;
         private readonly IValidator<CreateGameDTO> _validatorCreate;
         private readonly IValidator<UpdateGameDTO> _validatorUpdate;
+        private readonly IValidator<UpdateTagsDTO> _validatorTagsUpdate;
 
         public GameController(
             IGameUseCase gameUseCase,
             IValidator<CreateGameDTO> validatorCreate,
-            IValidator<UpdateGameDTO> validatorUpdate)
+            IValidator<UpdateGameDTO> validatorUpdate,
+            IValidator<UpdateTagsDTO> validatorTagsUpdate)
         {
             _gameUseCase = gameUseCase;
             _validatorCreate = validatorCreate;
             _validatorUpdate = validatorUpdate;
+            _validatorTagsUpdate = validatorTagsUpdate;
         }
 
         [HttpGet]
@@ -104,7 +107,13 @@ namespace fcg.GameService.API.Controllers
                     Errors = ["O Id deve ser informado."]
                 });
 
+            var validation = ValidationHelper.Validate(_validatorTagsUpdate, tags);
+
+            if (validation.Count > 0)
+                return BadRequest(validation);
+
             var success = await _gameUseCase.UpdateTagsAsync(id, tags);
+            
             return success ? NoContent() : NotFound("Jogo não encontrado.");
         }
 
