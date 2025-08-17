@@ -1,4 +1,6 @@
 using System.Text.Json;
+using fcg.GameService.API.DTOs.GameLibrary;
+using fcg.GameService.API.DTOs.GameLibrary.Requests;
 using fcg.GameService.API.DTOs.Requests;
 using fcg.GameService.API.Handlers;
 using fcg.GameService.API.Infrastructure.Configurations;
@@ -36,6 +38,9 @@ builder.Services.AddScoped<IValidator<CreateGameDTO>, CreateGameDTOValidator>();
 builder.Services.AddScoped<IValidator<UpdateGameDTO>, UpdateGameDTOValidator>();
 builder.Services.AddScoped<IValidator<UpdateTagsDTO>, UpdateTagsDTOValidator>();
 builder.Services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
+builder.Services.AddScoped<IValidator<CreateGameLibraryDTO>, CreateGameLibraryDTOValidator>();
+builder.Services.AddScoped<IValidator<AddGameToLibraryDTO>, AddGameToLibraryDTOValidator>();
+builder.Services.AddScoped<IValidator<RemoveGameFromLibraryDTO>, RemoveGameFromLibraryDTOValidator>();
 builder.Services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
 
 builder.Services.AddProblemDetails();
