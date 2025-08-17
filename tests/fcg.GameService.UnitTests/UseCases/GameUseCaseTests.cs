@@ -8,12 +8,12 @@ using Shouldly;
 
 namespace fcg.GameService.UnitTests.UseCases;
 
-public class GameUseCaseTest
+public class GameUseCaseTests
 {
     private readonly Mock<IGameRepository> _repository;
     private readonly GameUseCase _useCase;
 
-    public GameUseCaseTest()
+    public GameUseCaseTests()
     {
         _repository = new Mock<IGameRepository>();
         _useCase = new GameUseCase(_repository.Object);

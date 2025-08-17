@@ -1,7 +1,6 @@
 using fcg.GameService.API.DTOs.GameLibrary;
 using fcg.GameService.API.DTOs.GameLibrary.Requests;
 using fcg.GameService.API.DTOs.Responses;
-using fcg.GameService.API.Entities;
 using fcg.GameService.API.Mappers;
 using fcg.GameService.API.Repositories.Interfaces;
 using fcg.GameService.API.UseCases.Interfaces;
