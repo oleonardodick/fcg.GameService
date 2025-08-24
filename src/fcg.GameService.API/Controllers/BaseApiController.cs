@@ -1,6 +1,5 @@
-using fcg.GameService.API.DTOs;
-using fcg.GameService.API.ProblemsDefinitions;
-using Microsoft.AspNetCore.Http.HttpResults;
+using fcg.GameService.Presentation.DTOs;
+using fcg.GameService.Presentation.ProblemDefinitions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fcg.GameService.API.Controllers;
@@ -19,14 +18,14 @@ public abstract class BaseApiController : ControllerBase
 
     protected ActionResult BadRequest(List<ErrorResponseDTO> errors)
     {
-        var problemDetails = new BusinesRuleProblemDetails(errors);
+        var problemDetails = new CustomValidationProblemDetails(errors);
         EnrichProblemDetails(problemDetails);
         return BadRequest(problemDetails);
     }
 
     protected ActionResult BadRequest(ErrorResponseDTO error)
     {
-        var problemDetails = new BusinesRuleProblemDetails(error);
+        var problemDetails = new CustomValidationProblemDetails(error);
         EnrichProblemDetails(problemDetails);
 
         return BadRequest(problemDetails);

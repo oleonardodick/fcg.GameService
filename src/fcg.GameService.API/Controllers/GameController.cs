@@ -1,9 +1,9 @@
-using fcg.GameService.API.DTOs;
-using fcg.GameService.API.DTOs.Requests;
-using fcg.GameService.API.DTOs.Responses;
-using fcg.GameService.API.Helpers;
-using fcg.GameService.API.ProblemsDefinitions;
-using fcg.GameService.API.UseCases.Interfaces;
+using fcg.GameService.Application.Helpers;
+using fcg.GameService.Application.Interfaces;
+using fcg.GameService.Presentation.DTOs;
+using fcg.GameService.Presentation.DTOs.Game.Requests;
+using fcg.GameService.Presentation.DTOs.Game.Responses;
+using fcg.GameService.Presentation.ProblemDefinitions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,7 +43,7 @@ namespace fcg.GameService.API.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseGameDTO>> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -60,7 +60,7 @@ namespace fcg.GameService.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Create([FromBody] CreateGameDTO game)
         {
             var validation = ValidationHelper.Validate(_validatorCreate, game);
@@ -74,7 +74,7 @@ namespace fcg.GameService.API.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Update(string id, [FromBody] UpdateGameDTO game)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -94,10 +94,10 @@ namespace fcg.GameService.API.Controllers
             return success ? NoContent() : NotFound("Jogo não encontrado.");
         }
 
-        [HttpPatch("/tags/{id}")]
+        [HttpPatch("tags/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> UpdateTags(string id, [FromBody] UpdateTagsDTO tags)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -120,7 +120,7 @@ namespace fcg.GameService.API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BusinesRuleProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Delete(string id)
         {
             if (string.IsNullOrWhiteSpace(id))

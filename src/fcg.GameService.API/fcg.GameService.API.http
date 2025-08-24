@@ -1,6 +1,95 @@
-@fcg.GameService.API_HostAddress = http://localhost:5002
+@HostAddress = http://localhost:5002
+@GAME_ID = 68ab0acfe26d578d3eebe474
+@GAME_LIBRARY_ID = 68ab0c37bf58f84c45e9e760
 
-GET {{fcg.GameService.API_HostAddress}}/weatherforecast/
+###GAME ENDPOINTS###
+
+GET {{HostAddress}}/API/Game/
 Accept: application/json
 
 ###
+
+GET {{HostAddress}}/API/Game/{{GAME_ID}}
+Accept: application/json
+
+###
+
+POST {{HostAddress}}/API/Game
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Novo jogo",
+  "description": "Descrição do novo jogo",
+  "price": 50,
+  "releasedDate": "2025-08-24",
+  "tags": [
+    "estrategia", "acao", "tiro em primeira pessoa"
+  ]
+}
+
+###
+PUT {{HostAddress}}/API/Game/{{GAME_ID}}
+Accept: application/json
+Content-Type: application/json
+
+{
+    "description": "Descrição atualizada via arquivo"
+}
+
+###
+PATCH {{HostAddress}}/API/Game/Tags/{{GAME_ID}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "tags": [
+    "rpg",
+    "estrategia em turnos"
+  ]
+}
+
+###
+DELETE {{HostAddress}}/API/Game/{{GAME_ID}}
+Accept: application/json
+
+###GAME LIBRARY ENDPOINTS###
+
+GET {{HostAddress}}/API/GameLibrary/{{GAME_LIBRARY_ID}}
+Accept: application/json
+
+###
+
+GET {{HostAddress}}/API/GameLibrary/User/user1234
+Accept: application/json
+
+###
+
+POST {{HostAddress}}/API/GameLibrary
+Accept: application/json
+Content-Type: application/json
+
+{
+  "userId": "user1234"
+}
+
+###
+
+POST {{HostAddress}}/API/GameLibrary/{{GAME_LIBRARY_ID}}/addGame
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "{{GAME_ID}}",
+  "name": "teste"
+}
+
+###
+
+DELETE {{HostAddress}}/API/GameLibrary/{{GAME_LIBRARY_ID}}/removeGame
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "{{GAME_ID}}"
+}

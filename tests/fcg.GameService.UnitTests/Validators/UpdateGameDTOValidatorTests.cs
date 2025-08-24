@@ -1,6 +1,6 @@
 using Bogus;
-using fcg.GameService.API.DTOs.Requests;
-using fcg.GameService.API.Validators;
+using fcg.GameService.Application.Validators;
+using fcg.GameService.Presentation.DTOs.Game.Requests;
 using FluentValidation.TestHelper;
 
 namespace fcg.GameService.UnitTests.Validators;

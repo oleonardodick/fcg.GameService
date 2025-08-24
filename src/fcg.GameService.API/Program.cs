@@ -1,57 +1,24 @@
 using System.Text.Json;
-using fcg.GameService.API.DTOs.GameLibrary;
-using fcg.GameService.API.DTOs.GameLibrary.Requests;
-using fcg.GameService.API.DTOs.Requests;
-using fcg.GameService.API.Handlers;
-using fcg.GameService.API.Infrastructure.Configurations;
-using fcg.GameService.API.Infrastructure.Services;
 using fcg.GameService.API.Middlewares;
-using fcg.GameService.API.Repositories.Implementations;
-using fcg.GameService.API.Repositories.Interfaces;
-using fcg.GameService.API.UseCases.Implementations;
-using fcg.GameService.API.UseCases.Interfaces;
-using fcg.GameService.API.Validators;
-using FluentValidation;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
+using fcg.GameService.Infrastructure;
+using fcg.GameService.Application;
+using fcg.GameService.API.Configurations;
+using fcg.GameService.Application.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var mongoSettings = builder.Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
-
-builder.Services.AddHealthChecks()
-    .AddMongoDb(
-        mongodbConnectionString: mongoSettings!.ConnectionString,
-        name:"mongodb",
-        timeout: TimeSpan.FromSeconds(5),
-        tags: ["db", "mongo"]
-    );
-
-builder.Services.Configure<MongoDbSettings>(
-    builder.Configuration.GetSection(nameof(MongoDbSettings))
-);
-
-builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
-builder.Services.AddScoped<IGameRepository, GameRepository>();
-builder.Services.AddScoped<IGameUseCase, GameUseCase>();
-builder.Services.AddScoped<IValidator<CreateGameDTO>, CreateGameDTOValidator>();
-builder.Services.AddScoped<IValidator<UpdateGameDTO>, UpdateGameDTOValidator>();
-builder.Services.AddScoped<IValidator<UpdateTagsDTO>, UpdateTagsDTOValidator>();
-builder.Services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
-builder.Services.AddScoped<IValidator<CreateGameLibraryDTO>, CreateGameLibraryDTOValidator>();
-builder.Services.AddScoped<IValidator<AddGameToLibraryDTO>, AddGameToLibraryDTOValidator>();
-builder.Services.AddScoped<IValidator<RemoveGameFromLibraryDTO>, RemoveGameFromLibraryDTOValidator>();
-builder.Services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
-
 builder.Services.AddProblemDetails();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
+MappingConfig.RegisterMappings();
 
 builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.SerializerOptions.WriteIndented = true;
 });
-
-builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>

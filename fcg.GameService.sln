@@ -11,6 +11,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1E8C850A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fcg.GameService.UnitTests", "tests\fcg.GameService.UnitTests\fcg.GameService.UnitTests.csproj", "{AE595D25-FECE-4075-A2D9-DED0CC17C942}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fcg.GameService.Infrastructure", "src\fcg.GameService.Infrastructure\fcg.GameService.Infrastructure.csproj", "{6099AE0D-B07C-494F-80FB-AB80C85EBB85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fcg.GameService.Application", "src\fcg.GameService.Application\fcg.GameService.Application.csproj", "{EB72996F-88D3-4363-A590-3287B07D10F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fcg.GameService.Domain", "src\fcg.GameService.Domain\fcg.GameService.Domain.csproj", "{EAEC783C-CDE5-41CA-9B71-E12779B955E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fcg.GameService.Presentation", "src\fcg.GameService.Presentation\fcg.GameService.Presentation.csproj", "{D063CE16-9A83-4796-A23F-3FD886F440BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +36,29 @@ Global
 		{AE595D25-FECE-4075-A2D9-DED0CC17C942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE595D25-FECE-4075-A2D9-DED0CC17C942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE595D25-FECE-4075-A2D9-DED0CC17C942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6099AE0D-B07C-494F-80FB-AB80C85EBB85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6099AE0D-B07C-494F-80FB-AB80C85EBB85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6099AE0D-B07C-494F-80FB-AB80C85EBB85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6099AE0D-B07C-494F-80FB-AB80C85EBB85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB72996F-88D3-4363-A590-3287B07D10F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB72996F-88D3-4363-A590-3287B07D10F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB72996F-88D3-4363-A590-3287B07D10F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB72996F-88D3-4363-A590-3287B07D10F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAEC783C-CDE5-41CA-9B71-E12779B955E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAEC783C-CDE5-41CA-9B71-E12779B955E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAEC783C-CDE5-41CA-9B71-E12779B955E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAEC783C-CDE5-41CA-9B71-E12779B955E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D063CE16-9A83-4796-A23F-3FD886F440BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D063CE16-9A83-4796-A23F-3FD886F440BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D063CE16-9A83-4796-A23F-3FD886F440BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D063CE16-9A83-4796-A23F-3FD886F440BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7CB7DD5B-BD1C-4748-A337-44BEE18AF893} = {A27F28FD-0A1C-48F0-8949-A21F7DA65449}
 		{AE595D25-FECE-4075-A2D9-DED0CC17C942} = {1E8C850A-77E1-4792-A3C2-37A62153A416}
+		{6099AE0D-B07C-494F-80FB-AB80C85EBB85} = {A27F28FD-0A1C-48F0-8949-A21F7DA65449}
+		{EB72996F-88D3-4363-A590-3287B07D10F8} = {A27F28FD-0A1C-48F0-8949-A21F7DA65449}
+		{EAEC783C-CDE5-41CA-9B71-E12779B955E1} = {A27F28FD-0A1C-48F0-8949-A21F7DA65449}
+		{D063CE16-9A83-4796-A23F-3FD886F440BC} = {A27F28FD-0A1C-48F0-8949-A21F7DA65449}
 	EndGlobalSection
 EndGlobal

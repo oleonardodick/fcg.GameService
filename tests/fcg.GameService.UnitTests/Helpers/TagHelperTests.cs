@@ -1,4 +1,4 @@
-using fcg.GameService.API.Helpers;
+using fcg.GameService.Application.Helpers;
 using Shouldly;
 
 namespace fcg.GameService.UnitTests.Helpers;

@@ -1,15 +1,15 @@
-using fcg.GameService.API.DTOs.GameLibrary;
-using fcg.GameService.API.DTOs.GameLibrary.Requests;
-using fcg.GameService.API.Entities;
-using fcg.GameService.API.Repositories.Interfaces;
-using fcg.GameService.API.UseCases.Implementations;
+using fcg.GameService.Application.UseCases;
+using fcg.GameService.Domain.Entities;
+using fcg.GameService.Domain.Repositories;
+using fcg.GameService.Presentation.DTOs.GameLibrary.Requests;
+using fcg.GameService.UnitTests.Fixtures;
 using fcg.GameService.UnitTests.Utils;
 using Moq;
 using Shouldly;
 
 namespace fcg.GameService.UnitTests.UseCases;
 
-public class GameLibraryUseCaseTests
+public class GameLibraryUseCaseTests : IClassFixture<MappingFixture>
 {
     private readonly Mock<IGameLibraryRepository> _repository;
     private readonly GameLibraryUseCase _useCase;

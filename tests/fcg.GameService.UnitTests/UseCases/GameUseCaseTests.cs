@@ -1,14 +1,15 @@
-using fcg.GameService.API.DTOs.Requests;
-using fcg.GameService.API.Entities;
-using fcg.GameService.API.Repositories.Interfaces;
-using fcg.GameService.API.UseCases.Implementations;
+using fcg.GameService.Application.UseCases;
+using fcg.GameService.Domain.Entities;
+using fcg.GameService.Domain.Repositories;
+using fcg.GameService.Presentation.DTOs.Game.Requests;
+using fcg.GameService.UnitTests.Fixtures;
 using fcg.GameService.UnitTests.Utils;
 using Moq;
 using Shouldly;
 
 namespace fcg.GameService.UnitTests.UseCases;
 
-public class GameUseCaseTests
+public class GameUseCaseTests : IClassFixture<MappingFixture>
 {
     private readonly Mock<IGameRepository> _repository;
     private readonly GameUseCase _useCase;
@@ -25,6 +26,7 @@ public class GameUseCaseTests
     {
         //Arrange
         var games = GameFaker.FakeListOfGame(10);
+        
         _repository
             .Setup(g => g.GetAllAsync())
             .ReturnsAsync(games);

@@ -1,6 +1,6 @@
 using Bogus;
-using fcg.GameService.API.DTOs.Requests;
-using fcg.GameService.API.Validators;
+using fcg.GameService.Application.Validators;
+using fcg.GameService.Presentation.DTOs.Game.Requests;
 using FluentValidation.TestHelper;
 using Shouldly;
 
@@ -199,7 +199,7 @@ public class CreateGameDTOValidatorTests
         var result = _validator.TestValidate(request);
 
         //Assert
-        result.ShouldHaveValidationErrors();
+        result.ShouldHaveAnyValidationError();
         result.Errors.Count().ShouldBeGreaterThan(1);
     }
 
