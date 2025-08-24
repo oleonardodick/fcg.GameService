@@ -7,18 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-    <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="8.0.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
-    <PackageReference Include="MongoDB.Bson" Version="2.22.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.22.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs/GameLibrary/Responses/" />
+    <ProjectReference Include="../fcg.GameService.Application/fcg.GameService.Application.csproj" />
+    <ProjectReference Include="../fcg.GameService.Infrastructure/fcg.GameService.Infrastructure.csproj" />
+    <ProjectReference Include="../fcg.GameService.Presentation/fcg.GameService.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

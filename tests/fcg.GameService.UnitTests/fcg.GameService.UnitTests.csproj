@@ -21,6 +21,10 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/fcg.GameService.API/fcg.GameService.API.csproj" />
+    <ProjectReference Include="../../src/fcg.GameService.Application/fcg.GameService.Application.csproj" />
+    <ProjectReference Include="../../src/fcg.GameService.Domain/fcg.GameService.Domain.csproj" />
+    <ProjectReference Include="../../src/fcg.GameService.Infrastructure/fcg.GameService.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/fcg.GameService.Presentation/fcg.GameService.Presentation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

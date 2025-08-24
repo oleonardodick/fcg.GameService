@@ -1,6 +1,6 @@
 using System.Text.Json;
-using fcg.GameService.API.DTOs;
-using fcg.GameService.API.ProblemsDefinitions;
+using fcg.GameService.Presentation.DTOs;
+using fcg.GameService.Presentation.ProblemDefinitions;
 
 namespace fcg.GameService.API.Middlewares;
 
@@ -57,7 +57,7 @@ public class BodyValidationMiddleware
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         context.Response.ContentType = "application/json";
 
-        var problem = new BusinesRuleProblemDetails(new ErrorResponseDTO
+        var problem = new CustomValidationProblemDetails(new ErrorResponseDTO
         {
             Property = "Body",
             Errors = [errorMessage]

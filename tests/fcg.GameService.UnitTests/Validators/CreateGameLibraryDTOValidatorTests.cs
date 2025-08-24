@@ -1,5 +1,5 @@
-using fcg.GameService.API.DTOs.GameLibrary;
-using fcg.GameService.API.Validators;
+using fcg.GameService.Application.Validators;
+using fcg.GameService.Presentation.DTOs.GameLibrary.Requests;
 using FluentValidation.TestHelper;
 using MongoDB.Bson;
 
