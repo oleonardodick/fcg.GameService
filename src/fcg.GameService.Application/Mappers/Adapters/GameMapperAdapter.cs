@@ -26,6 +26,4 @@ public class GameMapperAdapter
     public static Game FromDtoToEntity(CreateGameDTO dto) =>
         dto.Adapt<Game>();
 
-    public static Game FromDtoToUpdateEntity(UpdateGameDTO dto, Game game)
-        => dto.Adapt(game);
 }

@@ -1,9 +1,11 @@
 using fcg.GameService.Application.UseCases;
 using fcg.GameService.Domain.Entities;
+using fcg.GameService.Domain.Exceptions;
 using fcg.GameService.Domain.Repositories;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.UnitTests.Fixtures;
 using fcg.GameService.UnitTests.Utils;
+using MongoDB.Bson;
 using Moq;
 using Shouldly;
 
@@ -13,6 +15,7 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
 {
     private readonly Mock<IGameRepository> _repository;
     private readonly GameUseCase _useCase;
+    private const string ENTITY = "Jogo";
 
     public GameUseCaseTests()
     {
@@ -66,11 +69,11 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         var gameToReturn = games[5];
 
         _repository
-            .Setup(g => g.GetByIdAsync(gameToReturn.Id))
+            .Setup(g => g.GetByIdAsync(gameToReturn.Id!))
             .ReturnsAsync(gameToReturn);
 
         //Act
-        var result = await _useCase.GetByIdAsync(gameToReturn.Id);
+        var result = await _useCase.GetByIdAsync(gameToReturn.Id!);
 
         //Assert
         result.ShouldNotBeNull();
@@ -80,24 +83,24 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         result.Price.ShouldBe(gameToReturn.Price);
         result.ReleasedDate.ShouldBe(gameToReturn.ReleasedDate);
         result.Tags.ShouldBe(gameToReturn.Tags);
-        _repository.Verify(r => r.GetByIdAsync(gameToReturn.Id), Times.Once);
+        _repository.Verify(r => r.GetByIdAsync(gameToReturn.Id!), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
-    [Fact(DisplayName = "GetByIdAsync_ShouldReturnNull")]
-    public async Task GetByIdAsync_ShouldReturnNull()
+    [Fact(DisplayName = "GetByIdAsync_ShouldThrowGameNotFound")]
+    public async Task GetByIdAsync_ShouldThrowGameNotFound()
     {
         //Arrange
+        var id = ObjectId.GenerateNewId().ToString();
+
         _repository
-            .Setup(g => g.GetByIdAsync(It.IsAny<string>()))
+            .Setup(g => g.GetByIdAsync(id))
             .ReturnsAsync((Game?)null);
 
-        //Act
-        var result = await _useCase.GetByIdAsync(It.IsAny<string>());
-
-        //Assert
-        result.ShouldBeNull();
-        _repository.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Once);
+        //Act & Assert
+        var exception = await Should.ThrowAsync<AppNotFoundException>(() => _useCase.GetByIdAsync(id));
+        exception.Message.ShouldBe($"{ENTITY} não encontrado com o ID {id}");
+        _repository.Verify(g => g.GetByIdAsync(id), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
@@ -117,7 +120,8 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         };
 
         _repository
-            .Setup(g => g.CreateAsync(game));
+            .Setup(g => g.CreateAsync(It.IsAny<Game>()))
+            .ReturnsAsync(game);
 
         //Act
         var result = await _useCase.CreateAsync(request);
@@ -145,7 +149,7 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         };
 
         _repository
-            .Setup(g => g.GetByIdAsync(game.Id))
+            .Setup(g => g.GetByIdAsync(game.Id!))
             .ReturnsAsync(game);
 
         _repository
@@ -153,30 +157,29 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
             .ReturnsAsync(true);
 
         //Act
-        var result = await _useCase.UpdateAsync(game.Id, request);
+        var result = await _useCase.UpdateAsync(game.Id!, request);
 
         //Assert
         result.ShouldBeTrue();
-        _repository.Verify(r => r.GetByIdAsync(game.Id), Times.Once);
+        _repository.Verify(r => r.GetByIdAsync(game.Id!), Times.Once);
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Game>()), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
-    [Fact(DisplayName = "UpdateAsync_ShouldReturnFalse")]
-    public async Task UpdateAsync_ShouldReturnFalse()
+    [Fact(DisplayName = "UpdateAsync_ShouldThrowGameNotFound")]
+    public async Task UpdateAsync_ShouldThrowGameNotFound()
     {
         //Arrange
+        var id = ObjectId.GenerateNewId().ToString();
+
         _repository
-            .Setup(g => g.GetByIdAsync(It.IsAny<string>()))
+            .Setup(g => g.GetByIdAsync(id))
             .ReturnsAsync((Game?)null);
 
-        //Act
-        var result = await _useCase.UpdateAsync(It.IsAny<string>(), It.IsAny<UpdateGameDTO>());
-
-        //Assert
-        result.ShouldBeFalse();
-        _repository.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Once);
-        _repository.Verify(r => r.UpdateAsync(It.IsAny<Game>()), Times.Never);
+        //Act & Assert
+        var exception = await Should.ThrowAsync<AppNotFoundException>(() => _useCase.GetByIdAsync(id));
+        exception.Message.ShouldBe($"{ENTITY} não encontrado com o ID {id}");
+        _repository.Verify(g => g.GetByIdAsync(id), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
@@ -190,42 +193,41 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         };
 
         _repository
-            .Setup(g => g.GetByIdAsync(game.Id))
+            .Setup(g => g.GetByIdAsync(game.Id!))
             .ReturnsAsync(game);
 
         _repository
-            .Setup(g => g.UpdateTagsAsync(game.Id, It.IsAny<List<string>>()))
+            .Setup(g => g.UpdateTagsAsync(game.Id!, It.IsAny<List<string>>()))
             .ReturnsAsync(true);
 
         //Act
-        var result = await _useCase.UpdateTagsAsync(game.Id, request);
+        var result = await _useCase.UpdateTagsAsync(game.Id!, request);
 
         //Assert
         result.ShouldBeTrue();
-        _repository.Verify(r => r.GetByIdAsync(game.Id), Times.Once);
-        _repository.Verify(r => r.UpdateTagsAsync(game.Id, It.IsAny<List<string>>()), Times.Once);
+        _repository.Verify(r => r.GetByIdAsync(game.Id!), Times.Once);
+        _repository.Verify(r => r.UpdateTagsAsync(game.Id!, It.IsAny<List<string>>()), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
-    [Fact(DisplayName = "UpdateTagsAsync_ShouldReturnFalse")]
-    public async Task UpdateTagsAsync_ShouldReturnFalse()
+    [Fact(DisplayName = "UpdateTagsAsync_ShouldThrowGameNotFound")]
+    public async Task UpdateTagsAsync_ShouldThrowGameNotFound()
     {
         //Arrange
+        var id = ObjectId.GenerateNewId().ToString();
         var request = new UpdateTagsDTO {
             Tags = ["new-tag", "other-tag"]
         };
 
         _repository
-            .Setup(g => g.GetByIdAsync(It.IsAny<string>()))
+            .Setup(g => g.GetByIdAsync(id))
             .ReturnsAsync((Game?)null);
 
-        //Act
-        var result = await _useCase.UpdateTagsAsync(It.IsAny<string>(), request);
 
-        //Assert
-        result.ShouldBeFalse();
-        _repository.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Once);
-        _repository.Verify(r => r.UpdateTagsAsync(It.IsAny<string>(), It.IsAny<List<string>>()), Times.Never);
+        //Act & Assert
+        var exception = await Should.ThrowAsync<AppNotFoundException>(() => _useCase.GetByIdAsync(id));
+        exception.Message.ShouldBe($"{ENTITY} não encontrado com o ID {id}");
+        _repository.Verify(g => g.GetByIdAsync(id), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
@@ -236,37 +238,37 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         var game = GameFaker.FakeListOfGame(1)[0];
 
         _repository
-            .Setup(g => g.GetByIdAsync(game.Id))
+            .Setup(g => g.GetByIdAsync(game.Id!))
             .ReturnsAsync(game);
 
         _repository
-            .Setup(g => g.DeleteAsync(game.Id))
+            .Setup(g => g.DeleteAsync(game.Id!))
             .ReturnsAsync(true);
 
         //Act
-        var result = await _useCase.DeleteAsync(game.Id);
+        var result = await _useCase.DeleteAsync(game.Id!);
 
         //Assert
         result.ShouldBeTrue();
-        _repository.Verify(r => r.GetByIdAsync(game.Id), Times.Once);
-        _repository.Verify(r => r.DeleteAsync(game.Id), Times.Once);
+        _repository.Verify(r => r.GetByIdAsync(game.Id!), Times.Once);
+        _repository.Verify(r => r.DeleteAsync(game.Id!), Times.Once);
     }
 
     [Trait("Module", "GameUseCase")]
-    [Fact(DisplayName = "DeleteAsync_ShouldReturnFalse")]
-    public async Task DeleteAsync_ShouldReturnFalse()
+    [Fact(DisplayName = "DeleteAsync_ShouldThrowGameNotFound")]
+    public async Task DeleteAsync_ShouldThrowGameNotFound()
     {
         //Arrange
+        var id = ObjectId.GenerateNewId().ToString();
+
         _repository
             .Setup(g => g.GetByIdAsync(It.IsAny<string>()))
             .ReturnsAsync((Game?)null);
 
-        //Act
-        var result = await _useCase.DeleteAsync(It.IsAny<string>());
 
-        //Assert
-        result.ShouldBeFalse();
-        _repository.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Once);
-        _repository.Verify(r => r.DeleteAsync(It.IsAny<string>()), Times.Never);
+        //Act & Assert
+        var exception = await Should.ThrowAsync<AppNotFoundException>(() => _useCase.GetByIdAsync(id));
+        exception.Message.ShouldBe($"{ENTITY} não encontrado com o ID {id}");
+        _repository.Verify(g => g.GetByIdAsync(id), Times.Once);
     }
 }

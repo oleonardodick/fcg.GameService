@@ -1,6 +1,6 @@
 @HostAddress = http://localhost:5002
-@GAME_ID = 68ab0acfe26d578d3eebe474
-@GAME_LIBRARY_ID = 68ab0c37bf58f84c45e9e760
+@GAME_ID = 68aba81b502ee98cefd193a4
+@GAME_LIBRARY_ID = 68ab8df2b86e6028f31939ca
 
 ###GAME ENDPOINTS###
 
@@ -19,8 +19,8 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "name": "Novo jogo",
-  "description": "Descrição do novo jogo",
+  "name": "Novo jogo 3",
+  "description": "Descrição do novo jogo 3",
   "price": 50,
   "releasedDate": "2025-08-24",
   "tags": [
@@ -60,7 +60,7 @@ Accept: application/json
 
 ###
 
-GET {{HostAddress}}/API/GameLibrary/User/user1234
+GET {{HostAddress}}/API/GameLibrary/User/usuarioBiblioteca
 Accept: application/json
 
 ###
@@ -70,7 +70,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "userId": "user1234"
+  "userId": "usuarioBiblioteca"
 }
 
 ###
@@ -81,7 +81,7 @@ Content-Type: application/json
 
 {
   "id": "{{GAME_ID}}",
-  "name": "teste"
+  "name": "teste2"
 }
 
 ###

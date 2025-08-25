@@ -1,9 +1,8 @@
 using fcg.GameService.Application.Helpers;
 using fcg.GameService.Application.Interfaces;
-using fcg.GameService.Presentation.DTOs;
+using fcg.GameService.Domain.Exceptions;
+using fcg.GameService.Domain.Models;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
-using fcg.GameService.Presentation.DTOs.Game.Responses;
-using fcg.GameService.Presentation.ProblemDefinitions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +12,7 @@ namespace fcg.GameService.API.Controllers
     [ApiController]
     [Produces("application/json")]
     [Consumes("application/json")]
-    public class GameController : BaseApiController
+    public class GameController : ControllerBase
     {
         private readonly IGameUseCase _gameUseCase;
         private readonly IValidator<CreateGameDTO> _validatorCreate;
@@ -33,106 +32,115 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IList<ResponseGameDTO>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IList<ResponseGameDTO>>> GetAll()
-        {
-            var games = await _gameUseCase.GetAllAsync();
-            return Success(games);
-        }
+        public async Task<IActionResult> GetAll() => Ok(await _gameUseCase.GetAllAsync());
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ResponseGameDTO>> GetById(string id)
+        public async Task<IActionResult> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(id),
-                    Errors = ["O Id deve ser informado."]
-                });
-
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(id),
+                        Errors = ["O ID deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
+                
             var game = await _gameUseCase.GetByIdAsync(id);
 
-            return game is null ? NotFound("Jogo não encontrado.") : Success(game);
+            return Ok(game);
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ResponseGameDTO), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Create([FromBody] CreateGameDTO game)
+        public async Task<IActionResult> Create([FromBody] CreateGameDTO game)
         {
-            var validation = ValidationHelper.Validate(_validatorCreate, game);
-            if (validation.Count > 0)
-                return BadRequest(validation);
+            var errors = ValidationHelper.Validate(_validatorCreate, game);
+            if (errors.Count > 0)
+                throw new AppValidationException(errors);
 
             var createdGame = await _gameUseCase.CreateAsync(game);
             return CreatedAtAction(nameof(GetById), new { id = createdGame.Id }, createdGame);
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Update(string id, [FromBody] UpdateGameDTO game)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateGameDTO game)
         {
-            if (string.IsNullOrWhiteSpace(id))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(id),
-                    Errors = ["O Id deve ser informado."]
-                });
+           if (string.IsNullOrWhiteSpace(id))
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(id),
+                        Errors = ["O ID deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
-            var validation = ValidationHelper.Validate(_validatorUpdate, game);
+            var errors = ValidationHelper.Validate(_validatorUpdate, game);
 
-            if (validation.Count > 0)
-                return BadRequest(validation);
+            if (errors.Count > 0)
+                throw new AppValidationException(errors);
 
-            var success = await _gameUseCase.UpdateAsync(id, game);
+            await _gameUseCase.UpdateAsync(id, game);
 
-            return success ? NoContent() : NotFound("Jogo não encontrado.");
+            return NoContent();
         }
 
         [HttpPatch("tags/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> UpdateTags(string id, [FromBody] UpdateTagsDTO tags)
+        public async Task<IActionResult> UpdateTags(string id, [FromBody] UpdateTagsDTO tags)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(id),
-                    Errors = ["O Id deve ser informado."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(id),
+                        Errors = ["O ID deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
-            var validation = ValidationHelper.Validate(_validatorTagsUpdate, tags);
+            var errors = ValidationHelper.Validate(_validatorTagsUpdate, tags);
 
-            if (validation.Count > 0)
-                return BadRequest(validation);
+            if (errors.Count > 0)
+                throw new AppValidationException(errors);
 
-            var success = await _gameUseCase.UpdateTagsAsync(id, tags);
-            
-            return success ? NoContent() : NotFound("Jogo não encontrado.");
+            await _gameUseCase.UpdateTagsAsync(id, tags);
+
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(id),
-                    Errors = ["O Id deve ser informado."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(id),
+                        Errors = ["O ID deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
-            var success = await _gameUseCase.DeleteAsync(id);
+            await _gameUseCase.DeleteAsync(id);
 
-            return success ? NoContent() : NotFound("Jogo não encontrado.");
+            return NoContent();
         }
     }
 }

@@ -17,6 +17,7 @@ public class GameLibraryMappingRegister : IRegister
 
         config.NewConfig<CreateGameLibraryDTO, GameLibrary>()
             .ConstructUsing(dto => new GameLibrary(
+                string.Empty,
                 dto.UserId,
                 new List<GameAdquired>()
             ));

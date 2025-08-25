@@ -26,10 +26,11 @@ public class GameLibraryDocument : IDocument
 
     public GameLibrary ToDomain()
         => new GameLibrary(
+            Id,
             UserId,
             Games.Select(g => g.ToDomain()).ToList()
             )
-        { Id = this.Id };
+        {  };
 }
 
 public class GameAdquiredDocument

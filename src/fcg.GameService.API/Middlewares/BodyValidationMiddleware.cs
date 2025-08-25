@@ -1,6 +1,6 @@
 using System.Text.Json;
-using fcg.GameService.Presentation.DTOs;
-using fcg.GameService.Presentation.ProblemDefinitions;
+using fcg.GameService.Domain.Exceptions;
+using fcg.GameService.Domain.Models;
 
 namespace fcg.GameService.API.Middlewares;
 
@@ -23,7 +23,7 @@ public class BodyValidationMiddleware
 
             if (context.Request.ContentLength == null || context.Request.ContentLength == 0)
             {
-                await WriteProblemDetails(context, "O corpo da requisição não pode ser vazio");
+                await ThrowProblem("O corpo da requisição não pode ser vazio");
                 return;
             }
 
@@ -32,7 +32,7 @@ public class BodyValidationMiddleware
 
             if (string.IsNullOrWhiteSpace(body.Substring(1,body.Length -2)))
             {
-                await WriteProblemDetails(context, "O corpo da requisição não pode ser vazio");
+                await ThrowProblem("O corpo da requisição não pode ser vazio");
                 return;
             }
 
@@ -42,7 +42,7 @@ public class BodyValidationMiddleware
             }
             catch (JsonException)
             {
-                await WriteProblemDetails(context, "O corpo da requisição não é um JSON válido.");
+                await ThrowProblem("O corpo da requisição não é um JSON válido.");
                 return;
             }
 
@@ -52,17 +52,17 @@ public class BodyValidationMiddleware
         await _next(context);
     }
 
-    private static async Task WriteProblemDetails(HttpContext context, string errorMessage)
+    private static Task ThrowProblem(string errorMessage)
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        context.Response.ContentType = "application/json";
-
-        var problem = new CustomValidationProblemDetails(new ErrorResponseDTO
-        {
-            Property = "Body",
-            Errors = [errorMessage]
-        });
-
-        await context.Response.WriteAsJsonAsync(problem);
+        List<ErrorDetails> error = [
+            new ErrorDetails {
+                Property = "Body",
+                Errors = [errorMessage]
+            }
+        ];
+        
+        throw new AppValidationException(
+            error
+        );
     }
 }

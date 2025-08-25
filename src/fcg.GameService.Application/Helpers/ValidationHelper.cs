@@ -1,11 +1,11 @@
-using fcg.GameService.Presentation.DTOs;
+using fcg.GameService.Domain.Models;
 using FluentValidation;
 
 namespace fcg.GameService.Application.Helpers;
 
 public class ValidationHelper
 {
-    public static List<ErrorResponseDTO> Validate<T>(IValidator<T> validator, T request)
+    public static List<ErrorDetails> Validate<T>(IValidator<T> validator, T request)
     {
         var validationResult = validator.Validate(request);
 
@@ -13,7 +13,7 @@ public class ValidationHelper
         {
             return validationResult.Errors
                 .GroupBy(p => p.PropertyName)
-                .Select(g => new ErrorResponseDTO
+                .Select(g => new ErrorDetails
                 {
                     Property = g.Key,
                     Errors = g.Select(e => e.ErrorMessage).ToList()

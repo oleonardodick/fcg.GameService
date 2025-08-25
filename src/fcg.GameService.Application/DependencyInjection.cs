@@ -1,12 +1,10 @@
-using System.Reflection;
-using fcg.GameService.Application.Handlers;
+using fcg.GameService.Application.Factories;
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Application.UseCases;
 using fcg.GameService.Application.Validators;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.Presentation.DTOs.GameLibrary.Requests;
 using FluentValidation;
-using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace fcg.GameService.Application;
@@ -25,7 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IValidator<AddGameToLibraryDTO>, AddGameToLibraryDTOValidator>();
         services.AddScoped<IValidator<RemoveGameFromLibraryDTO>, RemoveGameFromLibraryDTOValidator>();
 
-        services.AddExceptionHandler<CustomExceptionHandler>();
+        services.AddSingleton<IErrorResponseFactory, ErrorResponseFactory>();
 
         return services;
     }
