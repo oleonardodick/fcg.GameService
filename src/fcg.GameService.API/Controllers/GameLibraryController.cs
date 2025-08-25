@@ -1,9 +1,8 @@
 using fcg.GameService.Application.Helpers;
 using fcg.GameService.Application.Interfaces;
-using fcg.GameService.Presentation.DTOs;
+using fcg.GameService.Domain.Exceptions;
+using fcg.GameService.Domain.Models;
 using fcg.GameService.Presentation.DTOs.GameLibrary.Requests;
-using fcg.GameService.Presentation.DTOs.GameLibrary.Responses;
-using fcg.GameService.Presentation.ProblemDefinitions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +12,7 @@ namespace fcg.GameService.API.Controllers
     [ApiController]
     [Produces("application/json")]
     [Consumes("application/json")]
-    public class GameLibraryController : BaseApiController
+    public class GameLibraryController : ControllerBase
     {
         private readonly IGameLibraryUseCase _gameLibraryUseCase;
         private readonly IValidator<CreateGameLibraryDTO> _validatorCreate;
@@ -33,50 +32,56 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseGameLibraryDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ResponseGameLibraryDTO>> GetById(string id)
+        public async Task<IActionResult> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(id),
-                    Errors = ["O Id deve ser informado."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(id),
+                        Errors = ["O ID deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
             var gameLibrary = await _gameLibraryUseCase.GetByIdAsync(id);
 
-            return gameLibrary is null ? NotFound("Biblioteca de jogos não encontrada") : Success(gameLibrary);
+            return Ok(gameLibrary);
         }
 
         [HttpGet("user/{userId}")]
-        [ProducesResponseType(typeof(ResponseGameLibraryDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ResponseGameLibraryDTO>> GetByUserId(string userId)
+        public async Task<IActionResult> GetByUserId(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(userId),
-                    Errors = ["O Id do usuário deve ser informado."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(userId),
+                        Errors = ["O ID do usuário deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
                 
             var gameLibrary = await _gameLibraryUseCase.GetByUserIdAsync(userId);
 
-            return gameLibrary is null ? NotFound("Biblioteca de jogos não encontrada") : Success(gameLibrary);
+            return Ok(gameLibrary);
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ResponseGameLibraryDTO), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreateGameLibraryDTO gameLibrary)
         {
-            var validation = ValidationHelper.Validate(_validatorCreate, gameLibrary);
+            var errors = ValidationHelper.Validate(_validatorCreate, gameLibrary);
 
-            if (validation.Count > 0)
-                return BadRequest(validation);
+            if (errors.Count > 0)
+                throw new AppValidationException(errors);
                 
             var createdGameLibrary = await _gameLibraryUseCase.CreateAsync(gameLibrary);
 
@@ -88,59 +93,74 @@ namespace fcg.GameService.API.Controllers
         }
 
         [HttpPost("{libraryId}/addGame")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddGame(string libraryId, [FromBody] AddGameToLibraryDTO game)
         {
             if (string.IsNullOrWhiteSpace(libraryId))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(libraryId),
-                    Errors = ["O Id da biblioteca deve ser informada."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(libraryId),
+                        Errors = ["O ID da biblioteca deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
             if (await _gameLibraryUseCase.ExistsGameOnLibraryAsync(libraryId, game.Id))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(game.Id),
-                    Errors = ["Jogo já cadastrado."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(game.Id),
+                        Errors = ["Jogo já cadastrado."]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
-            var validation = ValidationHelper.Validate(_validatorAddGame, game);
+            var errors = ValidationHelper.Validate(_validatorAddGame, game);
 
-            if (validation.Count > 0)
-                return BadRequest(validation);
+            if (errors.Count > 0)
+                throw new AppValidationException(errors);
 
-            var success = await _gameLibraryUseCase.AddGameToLibraryAsync(libraryId, game);
+            await _gameLibraryUseCase.AddGameToLibraryAsync(libraryId, game);
 
-            return success ? NoContent() : NotFound("Biblioteca de jogos não encontrada");
+            return NoContent();
         }
 
         [HttpDelete("{libraryId}/removeGame")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(NotFoundProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(CustomValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveGame(string libraryId, [FromBody] RemoveGameFromLibraryDTO game)
         {
             if (string.IsNullOrWhiteSpace(libraryId))
-                return BadRequest(new ErrorResponseDTO
-                {
-                    Property = nameof(libraryId),
-                    Errors = ["O Id da biblioteca deve ser informado."]
-                });
+            {
+                List<ErrorDetails> error = [
+                    new ErrorDetails {
+                        Property = nameof(libraryId),
+                        Errors = ["O ID da biblioteca deve ser informado"]
+                    }
+                ];
+                
+                throw new AppValidationException(
+                    error
+                );
+            }
 
-            var validation = ValidationHelper.Validate(_validatorRemoveGame, game);
+            var errors = ValidationHelper.Validate(_validatorRemoveGame, game);
 
-            if (validation.Count > 0)
-                return BadRequest(validation);
+            if (errors.Count > 0)
+                throw new AppValidationException(errors);
 
             if (!await _gameLibraryUseCase.ExistsGameOnLibraryAsync(libraryId, game.Id))
                     return NotFound("Jogo não cadastrado");
 
             var success = await _gameLibraryUseCase.RemoveGameFromLibraryAsync(libraryId, game);
 
-            return success ? NoContent() : NotFound("Biblioteca de jogos não encontrada");
+            return NoContent();
         }
     }
 }

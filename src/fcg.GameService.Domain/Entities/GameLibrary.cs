@@ -1,13 +1,15 @@
 namespace fcg.GameService.Domain.Entities;
 
-public class GameLibrary : BaseEntity
+public class GameLibrary
 {
-    public string UserId { get; set; } = string.Empty;
+    public string Id { get; private set; } = string.Empty;
+    public string UserId { get; private set; } = string.Empty;
 
-    public List<GameAdquired> Games { get; set; } = [];
+    public List<GameAdquired> Games { get; private set; } = [];
 
-    public GameLibrary(string userId, List<GameAdquired> games)
+    public GameLibrary(string id, string userId, List<GameAdquired> games)
     {
+        Id = id;
         UserId = userId;
         Games = games;
     }
@@ -15,9 +17,9 @@ public class GameLibrary : BaseEntity
 
 public class GameAdquired
 {
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; private set; } = string.Empty;
 
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
 
     public GameAdquired(string id, string name)
     {

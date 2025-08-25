@@ -1,6 +1,7 @@
 using fcg.GameService.Application.Helpers;
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Application.Mappers.Adapters;
+using fcg.GameService.Domain.Exceptions;
 using fcg.GameService.Domain.Repositories;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.Presentation.DTOs.Game.Responses;
@@ -10,6 +11,7 @@ namespace fcg.GameService.Application.UseCases;
 public class GameUseCase : IGameUseCase
 {
     private readonly IGameRepository _repository;
+    private const string ENTITY = "Jogo";
 
     public GameUseCase(IGameRepository repository)
     {
@@ -30,7 +32,7 @@ public class GameUseCase : IGameUseCase
         var game = await _repository.GetByIdAsync(id);
 
         if (game == null)
-            return null;
+            throw AppNotFoundException.ForEntity(ENTITY, id);
 
         var response = GameMapperAdapter.FromEntityToDto(game);
 
@@ -52,21 +54,23 @@ public class GameUseCase : IGameUseCase
     {
         var gameToUpdate = await _repository.GetByIdAsync(id);
 
-        if (gameToUpdate is null)
-            return false;
-
         if (request.Tags is not null)
             request.Tags = TagHelper.NormalizeTags(request.Tags);
 
-        var game = GameMapperAdapter.FromDtoToUpdateEntity(request, gameToUpdate);
+        gameToUpdate!.Update(
+            request.Name,
+            request.Price,
+            request.ReleasedDate,
+            request.Tags,
+            request.Description
+        );
 
-        return await _repository.UpdateAsync(game);
+        return await _repository.UpdateAsync(gameToUpdate!);
     }
 
     public async Task<bool> UpdateTagsAsync(string id, UpdateTagsDTO tags)
     {
-        if (await GetByIdAsync(id) is null)
-            return false;
+        await GetByIdAsync(id);
 
         tags.Tags = TagHelper.NormalizeTags(tags.Tags);
 
@@ -75,8 +79,7 @@ public class GameUseCase : IGameUseCase
 
     public async Task<bool> DeleteAsync(string id)
     {
-        if (await GetByIdAsync(id) is null)
-            return false;
+        await GetByIdAsync(id);
 
         return await _repository.DeleteAsync(id);
     }

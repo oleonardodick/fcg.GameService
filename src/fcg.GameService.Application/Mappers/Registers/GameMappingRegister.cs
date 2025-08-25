@@ -11,15 +11,13 @@ public class GameMappingRegister : IRegister
     {
         config.NewConfig<CreateGameDTO, Game>()
             .ConstructUsing(dto => new Game(
+                string.Empty,
                 dto.Name,
                 dto.Price,
                 dto.ReleasedDate,
                 dto.Tags,
                 dto.Description
             ));
-
-        config.NewConfig<UpdateGameDTO, Game>()
-            .IgnoreNullValues(true);
 
         config.NewConfig<Game, ResponseGameDTO>();
     }

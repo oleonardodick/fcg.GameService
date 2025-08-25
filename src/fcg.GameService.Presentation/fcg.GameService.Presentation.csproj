@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../fcg.GameService.Domain/fcg.GameService.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

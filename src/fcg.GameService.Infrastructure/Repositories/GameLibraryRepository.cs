@@ -16,7 +16,7 @@ public class GameLibraryRepository : BaseRepository<GameLibrary, GameLibraryDocu
 
         var result = await _collection.Find(filter).FirstOrDefaultAsync();
 
-        return ToDomain(result);
+        return result == null ? default : ToDomain(result);
     }
 
     public async Task<bool> AddGameToLibraryAsync(string libraryId, GameAdquired game)

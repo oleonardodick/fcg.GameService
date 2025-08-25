@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

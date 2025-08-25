@@ -37,5 +37,5 @@ public class GameDocument : IDocument
         };
 
     public Game ToDomain()
-        => new Game(Name, Price, ReleasedDate, Tags, Description) { Id = this.Id };
+        => new Game(Id, Name, Price, ReleasedDate, Tags, Description) { };
 }
