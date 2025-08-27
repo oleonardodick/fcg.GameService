@@ -14,23 +14,23 @@ public class GameLibraryDocument : IDocument
     public string UserId { get; set; } = string.Empty;
 
     [BsonElement("games")]
-    public List<GameAdquiredDocument> Games { get; set; } = [];
+    public ICollection<GameAdquiredDocument> Games { get; set; } = [];
 
     public static GameLibraryDocument FromDomain(GameLibrary library)
-        => new GameLibraryDocument
+        => new()
         {
             Id = string.IsNullOrWhiteSpace(library.Id) ? ObjectId.GenerateNewId().ToString() : library.Id,
             UserId = library.UserId,
-            Games = library.Games.Select(GameAdquiredDocument.FromDomain).ToList()
+            Games = [.. library.Games.Select(GameAdquiredDocument.FromDomain)]
         };
 
     public GameLibrary ToDomain()
-        => new GameLibrary(
+        => new(
             Id,
             UserId,
-            Games.Select(g => g.ToDomain()).ToList()
+            [.. Games.Select(g => g.ToDomain())]
             )
-        {  };
+        { };
 }
 
 public class GameAdquiredDocument
@@ -41,13 +41,17 @@ public class GameAdquiredDocument
     [BsonElement("name")]
     public string Name { get; set; } = string.Empty;
 
+    [BsonElement("tags")]
+    public ICollection<string> Tags { get; set; } = [];
+
     public static GameAdquiredDocument FromDomain(GameAdquired adquired)
-        => new GameAdquiredDocument
+        => new()
         {
             Id = adquired.Id,
             Name = adquired.Name,
+            Tags = adquired.Tags
         };
 
     public GameAdquired ToDomain()
-        => new GameAdquired(Id, Name);
+        => new(Id, Name, Tags);
 }
