@@ -8,20 +8,22 @@ public static class GameLibraryFaker
 {
     public static List<GameLibrary> FakeListOfGameLibrary(int qtToGenerate, int qtGames)
     {
-        var gameLibraryFaker = new Faker<GameLibrary>()
+        Faker<GameLibrary> gameLibraryFaker = new Faker<GameLibrary>()
             .CustomInstantiator(f => new GameLibrary(
-                id: ObjectId.GenerateNewId().ToString(),
-                userId: Guid.NewGuid().ToString(),
-                games: FakeListOfGameAdquired(qtGames)
+                Id: ObjectId.GenerateNewId().ToString(),
+                UserId: Guid.NewGuid().ToString(),
+                Games: FakeListOfGameAdquired(qtGames)
             ));
         return gameLibraryFaker.Generate(qtToGenerate);
     }
 
-    public static List<GameAdquired> FakeListOfGameAdquired(int qtToGenerate) {
-        var gameAdquiredFaker = new Faker<GameAdquired>()
+    public static List<GameAdquired> FakeListOfGameAdquired(int qtToGenerate)
+    {
+        Faker<GameAdquired> gameAdquiredFaker = new Faker<GameAdquired>()
             .CustomInstantiator(f => new GameAdquired(
-                id: ObjectId.GenerateNewId().ToString(),
-                name: f.Commerce.ProductName()
+                Id: ObjectId.GenerateNewId().ToString(),
+                Name: f.Commerce.ProductName(),
+                Tags: [.. f.Lorem.Words(f.Random.Int(1, 5))]
             ));
 
         return gameAdquiredFaker.Generate(qtToGenerate);
