@@ -1,5 +1,6 @@
 using fcg.GameService.Application.Mappers.Adapters;
 using fcg.GameService.Application.UseCases;
+using fcg.GameService.Domain.Elasticsearch;
 using fcg.GameService.Domain.Entities;
 using fcg.GameService.Domain.Exceptions;
 using fcg.GameService.Domain.Repositories;
@@ -15,6 +16,7 @@ namespace fcg.GameService.UnitTests.UseCases;
 public class GameLibraryUseCaseTests : IClassFixture<MappingFixture>
 {
     private readonly Mock<IGameLibraryRepository> _repository;
+    private readonly Mock<IElasticClient<UserLog>> _elasticMock;
     private readonly GameLibraryUseCase _useCase;
     private const string ENTITY = "Biblioteca";
     private readonly Random random = new();
@@ -22,7 +24,8 @@ public class GameLibraryUseCaseTests : IClassFixture<MappingFixture>
     public GameLibraryUseCaseTests()
     {
         _repository = new Mock<IGameLibraryRepository>();
-        _useCase = new GameLibraryUseCase(_repository.Object);
+        _elasticMock = new Mock<IElasticClient<UserLog>>();
+        _useCase = new GameLibraryUseCase(_repository.Object, _elasticMock.Object);
     }
 
     [Trait("Module", "GameLibraryUseCase")]

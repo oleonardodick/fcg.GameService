@@ -8,7 +8,7 @@ namespace fcg.GameService.UnitTests.Validators;
 
 public class CreateGameDTOValidatorTests
 {
-    private CreateGameDTOValidator _validator;
+    private readonly CreateGameDTOValidator _validator;
 
     public CreateGameDTOValidatorTests()
     {
@@ -20,7 +20,7 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnRequiredFieldForName()
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Price = 10,
             ReleasedDate = DateTime.UtcNow,
@@ -28,7 +28,7 @@ public class CreateGameDTOValidatorTests
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Name).WithErrorMessage("O nome é obrigatório.");
@@ -39,7 +39,7 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnMaxSizeForName()
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Lorem ipsum dolor sit amet, consectetur adipiscing.",
             Price = 10,
@@ -48,7 +48,7 @@ public class CreateGameDTOValidatorTests
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Name).WithErrorMessage("O nome deve possuir no máximo 50 caracteres.");
@@ -59,7 +59,7 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnMaxSizeForDescription()
     {
         //Arrange
-        var faker = new Faker();
+        Faker faker = new();
 
         string description = "";
         while (description.Length <= 500)
@@ -67,7 +67,7 @@ public class CreateGameDTOValidatorTests
             description += " " + faker.Lorem.Sentence();
         }
 
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Game test",
             Description = description,
@@ -76,7 +76,7 @@ public class CreateGameDTOValidatorTests
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Description).WithErrorMessage("A descrição deve possuir no máximo 500 caracteres.");
@@ -89,7 +89,7 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnPriceGreaterThanZero(double? price)
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Game test",
             Tags = ["tag"],
@@ -97,7 +97,7 @@ public class CreateGameDTOValidatorTests
         if (price != null) request.Price = (double)price;
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Price).WithErrorMessage("O preço deve ser maior que 0.");
@@ -108,7 +108,7 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnErrorWhenNoDataIsProvided()
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Game test",
             Price = 10,
@@ -117,18 +117,18 @@ public class CreateGameDTOValidatorTests
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.ReleasedDate).WithErrorMessage("A data de lançamento deve ser informada.");
     }
 
-     [Trait("Module", "CreateGameDTOValidator")]
+    [Trait("Module", "CreateGameDTOValidator")]
     [Fact(DisplayName = "Validate_ShouldReturnErrorWhenFutureDataIsProvided")]
     public void Validate_ShouldReturnErrorWhenFutureDataIsProvided()
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Game test",
             Price = 10,
@@ -137,7 +137,7 @@ public class CreateGameDTOValidatorTests
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.ReleasedDate).WithErrorMessage("Não é possível cadastrar um jogo com lançamento futuro.");
@@ -148,7 +148,7 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnErrorWhenNoTagsWereProvided()
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Game test",
             Price = 10,
@@ -156,7 +156,7 @@ public class CreateGameDTOValidatorTests
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Tags).WithErrorMessage("Ao menos uma tag deve ser informada.");
@@ -170,15 +170,15 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnErrorWhenSomeTagIsInWrongFormat(params string[] tags)
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = "Game test",
             Price = 10,
-            Tags = tags.ToList()
+            Tags = [.. tags]
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Tags).WithErrorMessage("A tag não pode ser nula, vazia ou com espaço em branco.");
@@ -189,18 +189,18 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnMoreThanOneError()
     {
         //Arrange
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Price = 10,
             Tags = []
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveAnyValidationError();
-        result.Errors.Count().ShouldBeGreaterThan(1);
+        result.Errors.Count.ShouldBeGreaterThan(1);
     }
 
     [Trait("Module", "CreateGameDTOValidator")]
@@ -208,24 +208,24 @@ public class CreateGameDTOValidatorTests
     public void Validate_ShouldReturnValidData()
     {
         //Arrange
-        var faker = new Faker();
+        Faker faker = new();
 
         string nome = faker.Commerce.ProductName();
         string description = faker.Commerce.ProductDescription();
         if (description.Length > 500)
-            description = description.Substring(0, 500);
+            description = description[..500];
 
-        var request = new CreateGameDTO
+        CreateGameDTO request = new()
         {
             Name = nome,
             Description = description,
             Price = 10,
             Tags = ["tag"],
-            ReleasedDate = DateTime.Now
+            ReleasedDate = new DateTime(2023, 1, 1)
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<CreateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldNotHaveAnyValidationErrors();
