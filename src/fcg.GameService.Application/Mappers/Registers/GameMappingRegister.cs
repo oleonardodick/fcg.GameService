@@ -1,3 +1,4 @@
+using fcg.GameService.Application.Helpers;
 using fcg.GameService.Domain.Entities;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.Presentation.DTOs.Game.Responses;
@@ -15,7 +16,7 @@ public class GameMappingRegister : IRegister
                 dto.Name,
                 dto.Price,
                 dto.ReleasedDate,
-                dto.Tags,
+                TagHelper.NormalizeTags(dto.Tags),
                 dto.Description
             ));
 
