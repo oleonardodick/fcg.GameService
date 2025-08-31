@@ -1,4 +1,5 @@
 using fcg.GameService.Application.UseCases;
+using fcg.GameService.Domain.Elasticsearch;
 using fcg.GameService.Domain.Entities;
 using fcg.GameService.Domain.Exceptions;
 using fcg.GameService.Domain.Repositories;
@@ -14,13 +15,15 @@ namespace fcg.GameService.UnitTests.UseCases;
 public class GameUseCaseTests : IClassFixture<MappingFixture>
 {
     private readonly Mock<IGameRepository> _repository;
+    private readonly Mock<IElasticClient<GameLog>> _elasticMock;
     private readonly GameUseCase _useCase;
     private const string ENTITY = "Jogo";
 
     public GameUseCaseTests()
     {
         _repository = new Mock<IGameRepository>();
-        _useCase = new GameUseCase(_repository.Object);
+        _elasticMock = new Mock<IElasticClient<GameLog>>();
+        _useCase = new GameUseCase(_repository.Object, _elasticMock.Object);
     }
 
     [Trait("Module", "GameUseCase")]

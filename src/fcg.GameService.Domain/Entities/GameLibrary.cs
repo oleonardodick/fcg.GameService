@@ -1,29 +1,15 @@
 namespace fcg.GameService.Domain.Entities;
 
-public class GameLibrary
+public record GameLibrary(string Id, string UserId, ICollection<GameAdquired> Games)
 {
-    public string Id { get; private set; } = string.Empty;
-    public string UserId { get; private set; } = string.Empty;
-
-    public List<GameAdquired> Games { get; private set; } = [];
-
-    public GameLibrary(string id, string userId, List<GameAdquired> games)
-    {
-        Id = id;
-        UserId = userId;
-        Games = games;
-    }
+    public string Id { get; } = Id;
+    public string UserId { get; } = UserId;
+    public ICollection<GameAdquired> Games { get; } = Games;
 }
 
-public class GameAdquired
+public record GameAdquired(string Id, string Name, ICollection<string> Tags)
 {
-    public string Id { get; private set; } = string.Empty;
-
-    public string Name { get; private set; } = string.Empty;
-
-    public GameAdquired(string id, string name)
-    {
-        Id = id;
-        Name = name;
-    }
+    public string Id { get; } = Id;
+    public string Name { get; } = Name;
+    public ICollection<string> Tags { get; } = Tags;
 }

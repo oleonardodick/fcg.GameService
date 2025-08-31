@@ -1,5 +1,7 @@
+using fcg.GameService.Domain.Elasticsearch;
 using fcg.GameService.Domain.Repositories;
 using fcg.GameService.Infrastructure.Configurations;
+using fcg.GameService.Infrastructure.Elasticsearch;
 using fcg.GameService.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +14,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-      
-        var mongoDbSettings = new MongoDbSettings();
+
+        MongoDbSettings mongoDbSettings = new();
         configuration.GetSection(nameof(MongoDbSettings)).Bind(mongoDbSettings);
 
         services.AddHealthChecks()
@@ -30,9 +32,9 @@ public static class DependencyInjection
 
         services.AddSingleton<IMongoClient>(sp =>
         {
-            var mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+            MongoDbSettings mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
 
-            var settings = MongoClientSettings.FromConnectionString(mongoDbSettings.ConnectionString);
+            MongoClientSettings settings = MongoClientSettings.FromConnectionString(mongoDbSettings.ConnectionString);
 
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
 
@@ -43,9 +45,14 @@ public static class DependencyInjection
 
         services.AddSingleton(sp =>
         {
-            var client = sp.GetRequiredService<IMongoClient>();
+            IMongoClient client = sp.GetRequiredService<IMongoClient>();
             return client.GetDatabase(mongoDbSettings.DatabaseName);
         });
+
+        services.Configure<ElasticSettings>(configuration.GetSection(nameof(ElasticSettings)));
+        services.AddSingleton<IElasticSettings>(sp => sp.GetRequiredService<IOptions<ElasticSettings>>().Value);
+
+        services.AddSingleton(typeof(IElasticClient<>), typeof(ElasticClient<>));
 
         services.AddScoped<IGameRepository, GameRepository>();
         services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
