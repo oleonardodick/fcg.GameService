@@ -1,20 +1,127 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Fiap Cloud Games
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## Microsserviço de Jogos
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+Uma API criada em Dot Net Core 8 responsável pelo controle dos jogos e da biblioteca de jogos utilizado no sistema da Fiap Cloud Games.
+Através desta API, será possível pesquisar, cadastrar, excluir e modificar jogos, assim como também criar e adicionar jogos à biblioteca de algum usuário.
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Indice
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+- [Download](#download)
+- [Banco de dados](#banco-de-dados)
+- [Como rodar o projeto?](#como-rodar-o-projeto)
+  - [Via Dotnet](#via-dotnet)
+  - [Via Docker Compose](#via-docker-compose)
+- [Logs](#logs)
+- [Uso](#uso)
+  - [Url Endpoints](#url-endpoints)
+  - [Controle de acesso](#controle-de-acesso)
+- [Swagger](#swagger)
+- [Testes](#testes)
+- [Contribuição](#contribuição)
+
+## Download
+
+Primeiramente, deve ser realizado o download (clone) deste repositório do GitHub. Este clone pode ser realizado através do seguinte comando:
+
+```bash
+  git clone https://github.com/oleonardodick/fcg.GameService.git
+```
+
+## Banco de dados
+
+Este projeto utiliza o MongoDB como banco de dados principal.
+
+## Como rodar o projeto?
+
+### Via Dotnet
+
+Para rodar o projeto via DotNet, primeiramente será necessário configurar no arquivo appsettings.json os dados de conexão do banco de dados.
+
+Para isso, deve ser informada a seguinte sessão no arquivo:
+
+```json
+  "MongoDbSettings":{
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "FCGGameService"
+  },
+```
+Os dados de ConnectionString e DatabaseName podem ser configurados conforme o que estiver instalado na máquina.
+
+### Via Docker Compose
+
+Foi disponibilizado neste repositório um arquivo docker-compose.yml para que seja possível buildar e rodar a aplicação e seus correlatos diretamente via docker, sem a necessidade de rodar o projeto via dotnet.
+
+Para isso, deve ser disponibilizado na raiz do projeto um arquivo .env com a seguinte estrutura:
+
+```javascript
+PROJECT_NAME=fcg-jogos
+
+# Port Configuration
+API_PORT=8080
+MONGO_PORT=27017
+
+# MongoDB Configuration
+MONGO_ROOT_USERNAME=userName
+MONGO_ROOT_PASSWORD=password
+MONGO_DATABASE=databaseName
+MONGO_CONNECTION_STRING=mongodb://userName:password@mongodb:27017/databaseName?authSource=admin
+
+# Database Settings
+MONGO_CONNECTION_TIMEOUT=30
+MONGO_MAX_POOL_SIZE=100
+```
+**Importante:** Este arquivo .env é apenas local e não deve ser enviado ao repositório.
+
+Após configurar o .env, pode ser rodado o seguinte comando na raiz do projeto:
+```bash
+docker compose up -d
+```
+
+Com isso, o docker irá buildar a imagem da API e subir todos os correlatos para que seja possível utilizar este microsserviço.
+
+#### Logs
+
+Esta aplicação está preparada para utilizar o Serilog para gerar os logs. Para isso, devem ser adicionadas as seguintes configurações no appsettings.json
+
+```json
+  "SerilogSettings":{
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      { "Name": "Console" }
+    ]
+  },
+```
+
+## Uso
+
+Abaixo algumas explicações sobre a utilização desta API. Maiores detalhes podem ser consultados através do Swagger disponibilizado.
+
+### Url Endpoints
+
+Todos os endpoints da API possuem como padrão a url "http://url-da-api/api/endpoint". Através desses endpoints será possível realizar o controle de cada uma das informações disponíveis na aplicação.
+
+### Controle de acesso
+
+Esta API receberá as requisições através de uma API Gateway. Deste modo, o controle de acesso aos endpoints deve ser realizado através da API Gateway.
+
+## Swagger
+
+Esta aplicação foi desenvolvida utilizando o Swagger como documentação. Para acessar a documentação, basta acessar a URL http://url-da-api/docs
+
+## Testes
+
+Ao clonar o repositório desta API, um projeto "UnitTests" será baixado também. Neste projeto ficarão todos os testes automatizados da aplicação, que poderão ser configurados para executar em uma pipeline.
+
+## Contribuição
+
+Esta API foi desenvolvida por:
+
+- [Leonardo Dick Bernardes](http://github.com/oleonardodick)
+- [Rodrigo Vedovato](https://github.com/guigovedovato)
