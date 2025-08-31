@@ -221,7 +221,7 @@ public class CreateGameDTOValidatorTests
             Description = description,
             Price = 10,
             Tags = ["tag"],
-            ReleasedDate = DateTime.Now
+            ReleasedDate = DateTime.UtcNow.AddMinutes(-5)
         };
 
         //Act
