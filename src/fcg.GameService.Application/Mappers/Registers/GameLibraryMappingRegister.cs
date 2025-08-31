@@ -20,7 +20,7 @@ public class GameLibraryMappingRegister : IRegister
             .ConstructUsing(dto => new GameLibrary(
                 string.Empty,
                 dto.UserId,
-                new List<GameAdquired>()
+                dto.Games.Select(g => new GameAdquired(g.Id, g.Name, g.Tags)).ToList()
             ));
 
         config.NewConfig<GameLibrary, ResponseGameLibraryDTO>();

@@ -12,7 +12,7 @@ public class ElasticClient<T>(IElasticSettings settings) : IElasticClient<T>
 
     public async Task<IReadOnlyCollection<T>> Get(ElasticLogRequest elasticLogRequest)
     {
-        SearchRequest request = new(elasticLogRequest.Index)
+        SearchRequest request = new(elasticLogRequest.Index.ToLowerInvariant())
         {
             From = elasticLogRequest.Page,
             Size = elasticLogRequest.Size,
@@ -31,7 +31,7 @@ public class ElasticClient<T>(IElasticSettings settings) : IElasticClient<T>
 
     public async Task<bool> AddOrUpdate(T log, string index)
     {
-        IndexResponse response = await _client.IndexAsync(log, x => x.Index(index));
+        IndexResponse response = await _client.IndexAsync(log, x => x.Index(index.ToLowerInvariant()));
 
         if (response.IsValidResponse)
         {

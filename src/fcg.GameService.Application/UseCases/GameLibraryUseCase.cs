@@ -11,10 +11,12 @@ namespace fcg.GameService.Application.UseCases;
 
 public class GameLibraryUseCase(
     IGameLibraryRepository repository,
-    IElasticClient<UserLog> elasticClient) : IGameLibraryUseCase
+    IElasticClient<UserLog> elasticClient,
+    IAppLogger<GameLibraryUseCase> logger) : IGameLibraryUseCase
 {
     private readonly IElasticClient<UserLog> _elasticClient = elasticClient;
     private readonly IGameLibraryRepository _repository = repository;
+    private readonly IAppLogger<GameLibraryUseCase> _logger = logger;
     private const string ENTITY = "Biblioteca";
 
     public async Task<ResponseGameLibraryDTO?> GetByIdAsync(string id)
@@ -38,10 +40,13 @@ public class GameLibraryUseCase(
 
         GameLibrary createdLibrary = await _repository.CreateAsync(gameLibrary);
 
-        await _elasticClient.AddOrUpdate(new UserLog
+        bool elastic = await _elasticClient.AddOrUpdate(new UserLog
             (createdLibrary.UserId,
              string.Join("|", createdLibrary.Games.Select(g => g.Tags))
             ), ENTITY);
+
+        if (!elastic)
+            _logger.LogWarning("Erro ao indexar a biblioteca no Elasticsearch");
 
         ResponseGameLibraryDTO response = GameLibraryMapperAdapter.FromEntityToDto(createdLibrary);
 
@@ -57,10 +62,15 @@ public class GameLibraryUseCase(
         bool addedGame = await _repository.AddGameToLibraryAsync(libraryId, gameAdquired);
 
         if (addedGame)
-            await _elasticClient.AddOrUpdate(new UserLog
+        {
+            bool elastic = await _elasticClient.AddOrUpdate(new UserLog
                 (library!.UserId,
                  string.Join("|", gameAdquired.Tags)
                 ), ENTITY);
+
+            if (!elastic)
+                _logger.LogWarning("Erro ao indexar a biblioteca no Elasticsearch");
+        }
 
         return addedGame;
     }
