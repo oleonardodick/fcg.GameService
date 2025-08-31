@@ -144,7 +144,7 @@ public static class TestData
 
         yield return new object[]
         {
-            new UpdateGameDTO{ReleasedDate = DateTime.Now}
+            new UpdateGameDTO{ReleasedDate = DateTime.UtcNow.AddMinutes(-5)}
         };
 
         yield return new object[]
