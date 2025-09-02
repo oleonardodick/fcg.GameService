@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace fcg.GameService.Application.Validators;
 
-public class UpdateGameDTOValidator:AbstractValidator<UpdateGameDTO>
+public class UpdateGameDTOValidator : AbstractValidator<UpdateGameDTO>
 {
     public UpdateGameDTOValidator()
     {
@@ -18,7 +18,7 @@ public class UpdateGameDTOValidator:AbstractValidator<UpdateGameDTO>
             .When(g => g.Price != null);
 
         RuleFor(g => g.ReleasedDate)
-            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Não é possível cadastrar um jogo com lançamento futuro.")
+            .LessThanOrEqualTo(DateTime.Now).WithMessage("Não é possível cadastrar um jogo com lançamento futuro.")
             .When(g => g.ReleasedDate != null);
 
         RuleFor(g => g.Tags)

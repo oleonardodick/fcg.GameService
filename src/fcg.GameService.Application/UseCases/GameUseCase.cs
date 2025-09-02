@@ -1,6 +1,8 @@
 using fcg.GameService.Application.Helpers;
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Application.Mappers.Adapters;
+using fcg.GameService.Domain.Elasticsearch;
+using fcg.GameService.Domain.Entities;
 using fcg.GameService.Domain.Exceptions;
 using fcg.GameService.Domain.Repositories;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
@@ -8,51 +10,56 @@ using fcg.GameService.Presentation.DTOs.Game.Responses;
 
 namespace fcg.GameService.Application.UseCases;
 
-public class GameUseCase : IGameUseCase
+public class GameUseCase(
+    IGameRepository repository,
+    IElasticClient<GameLog> elasticClient,
+    IAppLogger<GameUseCase> logger) : IGameUseCase
 {
-    private readonly IGameRepository _repository;
+    private readonly IElasticClient<GameLog> _elasticClient = elasticClient;
+    private readonly IGameRepository _repository = repository;
+    private readonly IAppLogger<GameUseCase> _logger = logger;
     private const string ENTITY = "Jogo";
-
-    public GameUseCase(IGameRepository repository)
-    {
-        _repository = repository;
-    }
 
     public async Task<IList<ResponseGameDTO>> GetAllAsync()
     {
-        var games = await _repository.GetAllAsync();
+        IList<Game> games = await _repository.GetAllAsync();
 
-        var response = GameMapperAdapter.FromListEntityToListDto(games);
+        IList<ResponseGameDTO> response = GameMapperAdapter.FromListEntityToListDto(games);
 
         return response;
     }
 
     public async Task<ResponseGameDTO?> GetByIdAsync(string id)
     {
-        var game = await _repository.GetByIdAsync(id);
-
-        if (game == null)
+        Game? game = await _repository.GetByIdAsync(id) ??
             throw AppNotFoundException.ForEntity(ENTITY, id);
-
-        var response = GameMapperAdapter.FromEntityToDto(game);
+        ResponseGameDTO response = GameMapperAdapter.FromEntityToDto(game);
 
         return response;
     }
 
     public async Task<ResponseGameDTO> CreateAsync(CreateGameDTO request)
     {
-        var game = GameMapperAdapter.FromDtoToEntity(request);
+        Game game = GameMapperAdapter.FromDtoToEntity(request);
 
-        var createdGame = await _repository.CreateAsync(game);
+        Game createdGame = await _repository.CreateAsync(game);
 
-        var response = GameMapperAdapter.FromEntityToDto(createdGame);
+        bool elastic = await _elasticClient.AddOrUpdate(new GameLog
+            (createdGame.Id,
+             string.Join("|", createdGame.Tags)
+            ), ENTITY);
+
+        if (!elastic)
+            _logger.LogWarning("Erro ao indexar a biblioteca no Elasticsearch");
+
+        ResponseGameDTO response = GameMapperAdapter.FromEntityToDto(createdGame);
 
         return response;
     }
 
     public async Task<bool> UpdateAsync(string id, UpdateGameDTO request)
     {
-        var gameToUpdate = await _repository.GetByIdAsync(id);
+        Game? gameToUpdate = await _repository.GetByIdAsync(id);
 
         if (request.Tags is not null)
             request.Tags = TagHelper.NormalizeTags(request.Tags);
@@ -65,7 +72,17 @@ public class GameUseCase : IGameUseCase
             request.Description
         );
 
-        return await _repository.UpdateAsync(gameToUpdate!);
+        bool updated = await _repository.UpdateAsync(gameToUpdate!);
+
+        bool elastic = await _elasticClient.AddOrUpdate(new GameLog
+            (gameToUpdate.Id,
+             string.Join("|", gameToUpdate.Tags)
+            ), ENTITY);
+
+        if (!elastic)
+            _logger.LogWarning("Erro ao indexar a biblioteca no Elasticsearch");
+
+        return updated;
     }
 
     public async Task<bool> UpdateTagsAsync(string id, UpdateTagsDTO tags)
@@ -73,6 +90,14 @@ public class GameUseCase : IGameUseCase
         await GetByIdAsync(id);
 
         tags.Tags = TagHelper.NormalizeTags(tags.Tags);
+
+        bool elastic = await _elasticClient.AddOrUpdate(new GameLog
+            (id,
+             string.Join("|", tags.Tags)
+            ), ENTITY);
+
+        if (!elastic)
+            _logger.LogWarning("Erro ao indexar a biblioteca no Elasticsearch");
 
         return await _repository.UpdateTagsAsync(id, tags.Tags);
     }

@@ -7,7 +7,7 @@ namespace fcg.GameService.UnitTests.Validators;
 
 public class UpdateGameDTOValidatorTests
 {
-    private UpdateGameDTOValidator _validator;
+    private readonly UpdateGameDTOValidator _validator;
 
     public UpdateGameDTOValidatorTests()
     {
@@ -19,14 +19,14 @@ public class UpdateGameDTOValidatorTests
     public void Validate_ShouldReturnMaxSizeForName()
     {
         //Arrange
-        var request = new UpdateGameDTO
+        UpdateGameDTO request = new()
         {
             //name with 51 characteres
             Name = "Lorem ipsum dolor sit amet, consectetur adipiscing.",
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<UpdateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Name).WithErrorMessage("O nome deve possuir no máximo 50 caracteres.");
@@ -37,19 +37,19 @@ public class UpdateGameDTOValidatorTests
     public void Validate_ShouldReturnMaxSizeForDescription()
     {
         //Arrange
-        var faker = new Faker();
+        Faker faker = new();
         string description = "";
-        while(description.Length <= 500)
+        while (description.Length <= 500)
         {
             description += " " + faker.Lorem.Sentence();
         }
-        var request = new UpdateGameDTO
+        UpdateGameDTO request = new()
         {
             Description = description,
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<UpdateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Description).WithErrorMessage("A descrição deve possuir no máximo 500 caracteres.");
@@ -60,13 +60,13 @@ public class UpdateGameDTOValidatorTests
     public void Validate_ShouldReturnPriceGreaterThanZero()
     {
         //Arrange
-        var request = new UpdateGameDTO
+        UpdateGameDTO request = new()
         {
             Price = 0
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<UpdateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Price).WithErrorMessage("O preço deve ser maior que 0.");
@@ -77,13 +77,13 @@ public class UpdateGameDTOValidatorTests
     public void Validate_ShouldReturnErrorWhenFutureDataIsProvided()
     {
         //Arrange
-        var request = new UpdateGameDTO
+        UpdateGameDTO request = new()
         {
             ReleasedDate = DateTime.Now.AddDays(1)
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<UpdateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.ReleasedDate).WithErrorMessage("Não é possível cadastrar um jogo com lançamento futuro.");
@@ -97,13 +97,13 @@ public class UpdateGameDTOValidatorTests
     public void Validate_ShouldReturnErrorWhenSomeTagIsInWrongFormat(params string[] tags)
     {
         //Arrange
-        var request = new UpdateGameDTO
+        UpdateGameDTO request = new()
         {
-            Tags = tags.ToList()
+            Tags = [.. tags]
         };
 
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<UpdateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldHaveValidationErrorFor(g => g.Tags).WithErrorMessage("A tag não pode ser nula, vazia ou com espaço em branco.");
@@ -111,11 +111,11 @@ public class UpdateGameDTOValidatorTests
 
     [Trait("Module", "UpdateGameDTOValidator")]
     [Theory(DisplayName = "Validate_ShouldPassTheValidation")]
-    [MemberData(nameof (TestData.GenerateValidData),MemberType =typeof(TestData))]
+    [MemberData(nameof(TestData.GenerateValidData), MemberType = typeof(TestData))]
     public void Validate_ShouldPassTheValidation(UpdateGameDTO request)
     {
         //Act
-        var result = _validator.TestValidate(request);
+        TestValidationResult<UpdateGameDTO> result = _validator.TestValidate(request);
 
         //Assert
         result.ShouldNotHaveAnyValidationErrors();

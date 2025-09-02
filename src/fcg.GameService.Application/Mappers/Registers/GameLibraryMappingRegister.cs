@@ -12,16 +12,17 @@ public class GameLibraryMappingRegister : IRegister
         config.NewConfig<AddGameToLibraryDTO, GameAdquired>()
             .ConstructUsing(dto => new GameAdquired(
                 dto.Id,
-                dto.Name
+                dto.Name,
+                dto.Tags
             ));
 
         config.NewConfig<CreateGameLibraryDTO, GameLibrary>()
             .ConstructUsing(dto => new GameLibrary(
                 string.Empty,
                 dto.UserId,
-                new List<GameAdquired>()
+                dto.Games.Select(g => new GameAdquired(g.Id, g.Name, g.Tags)).ToList()
             ));
-            
+
         config.NewConfig<GameLibrary, ResponseGameLibraryDTO>();
     }
 }
