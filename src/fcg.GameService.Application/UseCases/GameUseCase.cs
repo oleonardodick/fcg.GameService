@@ -91,6 +91,14 @@ public class GameUseCase(
 
         tags.Tags = TagHelper.NormalizeTags(tags.Tags);
 
+        bool elastic = await _elasticClient.AddOrUpdate(new GameLog
+            (id,
+             string.Join("|", tags.Tags)
+            ), ENTITY);
+
+        if (!elastic)
+            _logger.LogWarning("Erro ao indexar a biblioteca no Elasticsearch");
+
         return await _repository.UpdateTagsAsync(id, tags.Tags);
     }
 
