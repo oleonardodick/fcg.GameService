@@ -23,7 +23,7 @@ public class GameDocument : IDocument
     public DateTime ReleasedDate { get; set; }
 
     [BsonElement("tags")]
-    public List<string> Tags { get; set; } = [];
+    public ICollection<string> Tags { get; set; } = [];
 
     public static GameDocument FromDomain(Game game)
         => new GameDocument

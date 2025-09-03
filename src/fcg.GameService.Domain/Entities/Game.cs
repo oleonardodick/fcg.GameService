@@ -1,29 +1,19 @@
 namespace fcg.GameService.Domain.Entities;
 
-public class Game
+public class Game(string id, string name, double price, DateTime releasedDate, ICollection<string> tags, string? description)
 {
-    public string Id { get; private set; } = string.Empty;
-    public string Name { get; private set; } = string.Empty;
+    public string Id { get; private set; } = id;
+    public string Name { get; private set; } = name;
 
-    public string? Description { get; private set; }
+    public string? Description { get; private set; } = description;
 
-    public double Price { get; private set; }
+    public double Price { get; private set; } = price;
 
-    public DateTime ReleasedDate { get; private set; }
+    public DateTime ReleasedDate { get; private set; } = releasedDate;
 
-    public List<string> Tags { get; private set; } = [];
+    public ICollection<string> Tags { get; private set; } = tags;
 
-    public Game(string id, string name, double price, DateTime releasedDate, List<string> tags, string? description)
-    {
-        Id = id;
-        Name = name;
-        Description = description;
-        Price = price;
-        ReleasedDate = releasedDate;
-        Tags = tags;
-    }
-
-    public void Update(string? name, double? price, DateTime? releasedDate, List<string>? tags, string? description)
+    public void Update(string? name, double? price, DateTime? releasedDate, ICollection<string>? tags, string? description)
     {
         if (!string.IsNullOrWhiteSpace(name))
             Name = name;

@@ -40,6 +40,9 @@ public class GameUseCase(
 
     public async Task<ResponseGameDTO> CreateAsync(CreateGameDTO request)
     {
+        if (request.Tags is not null)
+            request.Tags = TagHelper.NormalizeTags(request.Tags);
+
         Game game = GameMapperAdapter.FromDtoToEntity(request);
 
         Game createdGame = await _repository.CreateAsync(game);

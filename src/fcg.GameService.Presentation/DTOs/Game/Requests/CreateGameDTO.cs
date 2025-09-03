@@ -10,5 +10,5 @@ public class CreateGameDTO
 
     public DateTime ReleasedDate { get; set; }
 
-    public required List<string> Tags { get; set; } = [];
+    public required ICollection<string> Tags { get; set; } = [];
 }

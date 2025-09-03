@@ -1,3 +1,4 @@
+using fcg.GameService.Application.Helpers;
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Application.Mappers.Adapters;
 using fcg.GameService.Domain.Elasticsearch;
@@ -36,6 +37,10 @@ public class GameLibraryUseCase(
 
     public async Task<ResponseGameLibraryDTO> CreateAsync(CreateGameLibraryDTO request)
     {
+        foreach (AddGameToLibraryDTO game in request.Games)
+            if (game.Tags is not null)
+                game.Tags = TagHelper.NormalizeTags(game.Tags);
+
         GameLibrary gameLibrary = GameLibraryMapperAdapter.FromDtoToEntity(request);
 
         GameLibrary createdLibrary = await _repository.CreateAsync(gameLibrary);
@@ -56,6 +61,9 @@ public class GameLibraryUseCase(
     public async Task<bool> AddGameToLibraryAsync(string libraryId, AddGameToLibraryDTO game)
     {
         ResponseGameLibraryDTO? library = await GetByIdAsync(libraryId);
+
+        if (game.Tags is not null)
+            game.Tags = TagHelper.NormalizeTags(game.Tags);
 
         GameAdquired gameAdquired = GameLibraryMapperAdapter.FromGameAdquiredDtoToEntity(game);
 

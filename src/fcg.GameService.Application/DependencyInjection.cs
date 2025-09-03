@@ -15,6 +15,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IGameUseCase, GameUseCase>();
         services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
+        services.AddScoped<ISuggestionUseCase, SuggestionUseCase>();
 
         services.AddScoped<IValidator<CreateGameDTO>, CreateGameDTOValidator>();
         services.AddScoped<IValidator<UpdateGameDTO>, UpdateGameDTOValidator>();

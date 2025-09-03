@@ -10,5 +10,5 @@ public class UpdateGameDTO
 
     public DateTime? ReleasedDate { get; set; }
 
-    public List<string>? Tags { get; set; }
+    public ICollection<string>? Tags { get; set; }
 }
