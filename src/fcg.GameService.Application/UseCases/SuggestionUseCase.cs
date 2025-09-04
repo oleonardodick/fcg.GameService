@@ -37,7 +37,7 @@ public class SuggestionUseCase(
 
         if (userLogs.Count == 0)
         {
-            _logger.LogWarning("Erro ao consultar a biblioteca no Elasticsearch");
+            _logger.LogWarning($"Erro ao consultar {LIBRARYENTITY} no Elasticsearch");
             return [];
         }
 
@@ -54,7 +54,7 @@ public class SuggestionUseCase(
 
         if (gameLogs.Count == 0)
         {
-            _logger.LogWarning("Erro ao consultar a biblioteca no Elasticsearch");
+            _logger.LogWarning($"Erro ao consultar {GAMEENTITY} no Elasticsearch");
             return [];
         }
 
@@ -63,10 +63,10 @@ public class SuggestionUseCase(
         GameLibrary? ownedGames = await _libraryRepository.GetByUserIdAsync(request.UserId);
 
         IEnumerable<string> suggestedGames = [];
-        if (ownedGames != null || ownedGames?.Games.Count > 0)
-            suggestedGames = taggedGames.Except(ownedGames.Games.Select(og => og.Id)).ToList();
+        if (ownedGames != null && ownedGames?.Games.Count > 0)
+            suggestedGames = taggedGames.Except(ownedGames.Games.Select(og => og.Id));
         else
-            suggestedGames = [.. taggedGames];
+            suggestedGames = taggedGames;
 
         IList<Game> response = await _gameRepository.GetAllByIdsAsync(suggestedGames);
 
