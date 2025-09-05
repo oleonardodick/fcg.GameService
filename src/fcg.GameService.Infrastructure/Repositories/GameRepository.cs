@@ -6,15 +6,18 @@ using MongoDB.Driver;
 
 namespace fcg.GameService.Infrastructure.Repositories;
 
-public class GameRepository : BaseRepository<Game, GameDocument>, IGameRepository
+public class GameRepository(IMongoDatabase database) : BaseRepository<Game, GameDocument>(database, "games"), IGameRepository
 {
-    public GameRepository(IMongoDatabase database) 
-        : base(database, "games") {}
-
     public async Task<IList<Game>> GetAllAsync()
     {
         var docs = await _collection.Find(_ => true).ToListAsync();
         return docs.Select(ToDomain).ToList();
+    }
+
+    public async Task<IList<Game>> GetAllByIdsAsync(IEnumerable<string> ids)
+    {
+        var docs = await _collection.Find(d => ids.Contains(d.Id)).ToListAsync();
+        return [.. docs.Select(ToDomain)];
     }
 
     public async Task<bool> UpdateAsync(Game game)
@@ -24,7 +27,7 @@ public class GameRepository : BaseRepository<Game, GameDocument>, IGameRepositor
         return result.ModifiedCount > 0;
     }
 
-    public async Task<bool> UpdateTagsAsync(string id, List<string> tags)
+    public async Task<bool> UpdateTagsAsync(string id, ICollection<string> tags)
     {
         var _id = new ObjectId(id);
         var filter = Builders<GameDocument>.Filter.Eq(d => d.Id, id);

@@ -7,7 +7,7 @@ public class TagHelper
 {
     private static readonly Regex _spaceRegex = new(@"\s+");
 
-    public static List<string> NormalizeTags(List<string>? tags)
+    public static ICollection<string> NormalizeTags(ICollection<string>? tags)
     {
         if (tags == null || tags.Count == 0)
             return [];
