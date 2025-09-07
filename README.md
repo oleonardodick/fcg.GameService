@@ -86,6 +86,10 @@ Após configurar o .env, pode ser rodado o seguinte comando na raiz do projeto:
 ```bash
 docker compose up -d
 ```
+ou
+```bash
+docker compose up --build -d api
+```
 
 Com isso, o docker irá buildar a imagem da API e subir todos os correlatos para que seja possível utilizar este microsserviço.
 
