@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Enrichers.Span;
 
 namespace fcg.GameService.Infrastructure.Configurations;
 
@@ -14,7 +15,9 @@ public static class LoggingSettings
         Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(configuration)
         .Enrich.FromLogContext()
+        .Enrich.WithSpan()
         .WriteTo.Console()
+        .WriteTo.OpenTelemetry()
         .CreateLogger();
 
         services.AddLogging(loggingBuilder =>
