@@ -1,8 +1,9 @@
 services:
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: ${PROJECT_NAME}-mongodb
     restart: unless-stopped
+    pull_policy: if_not_present
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
@@ -11,7 +12,19 @@ services:
       - "${MONGO_PORT}:27017"
     volumes:
       - mongodb_data:/data/db
-      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - microservice-network
+
+  gameService-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: dashboard
+    ports:
+      - "${DASHBOARD_PORT}:18888"
+      - "${OTLP_GRPC_PORT}:18889"
+      - "${OTLP_HTTP_PORT}:18890"
+    environment:
+      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+      - OTEL_LOGS_INCLUDE_TRACE_CONTEXT=true
     networks:
       - microservice-network
 
@@ -24,14 +37,19 @@ services:
     environment:
       - MongoDbSettings__ConnectionString=${MONGO_CONNECTION_STRING}
       - MongoDbSettings__DatabaseName=${MONGO_DATABASE}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_PROTOCOL}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME}
+      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES}
     ports:
       - "${API_PORT}:8080"
     depends_on:
       - mongodb
+      - gameService-dashboard
     networks:
       - microservice-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
