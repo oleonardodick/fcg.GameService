@@ -11,17 +11,17 @@ using fcg.GameService.Presentation.Event.Publish;
 
 namespace fcg.GameService.Application.UseCases;
 
-public class PurchaseUseCase(
+public class GamePurchaseUseCase(
     IGameRepository gameRepository,
-    IPublisher publisher,
-    IConsumer consumer) : IPurchaseUseCase
+    IPublisher<GamePurchasePublishEvent> publisher,
+    IConsumer<GamePurchaseConsumeEvent> consumer) : IPurchaseUseCase
 {
     private readonly IGameRepository _gameRepository = gameRepository;
-    private readonly IPublisher _publisher = publisher;
-    private readonly IConsumer _consumer = consumer;
+    private readonly IPublisher<GamePurchasePublishEvent> _publisher = publisher;
+    private readonly IConsumer<GamePurchaseConsumeEvent> _consumer = consumer;
     private const string ENTITY = "Jogo";
 
-    public async Task<ResponseQueuedDto> PublishAsync(PurchaseGameDTO request)
+    public async Task<ResponseQueuedDto> PublishAsync(PurchaseGameDTO request, CancellationToken cancellationToken)
     {
         Game? game = await _gameRepository.GetByIdAsync(request.GameId) ??
             throw AppNotFoundException.ForEntity(ENTITY, request.GameId);
@@ -35,7 +35,7 @@ public class PurchaseUseCase(
             PaymentMethod = nameof(request.PaymentMethod)
         };
 
-        await _publisher.PublishAsync(@event);
+        await _publisher.PublishAsync(@event, cancellationToken);
 
         return new ResponseQueuedDto
         {
@@ -46,9 +46,9 @@ public class PurchaseUseCase(
         };
     }
 
-    public async Task<ConsumedQueueDto?> ConsumeAsync()
+    public async Task<ConsumedQueueDto?> ConsumeAsync(CancellationToken cancellationToken)
     {
-        GamePurchaseConsumeEvent? @event = await _consumer.ConsumeAsync<GamePurchaseConsumeEvent>();
+        GamePurchaseConsumeEvent? @event = await _consumer.ConsumeAsync(cancellationToken);
 
         if (@event is null)
             return null;

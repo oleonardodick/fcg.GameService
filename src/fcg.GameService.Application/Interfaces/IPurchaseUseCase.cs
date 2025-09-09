@@ -5,6 +5,6 @@ namespace fcg.GameService.Application.Interfaces;
 
 public interface IPurchaseUseCase
 {
-    Task<ResponseQueuedDto> PublishAsync(PurchaseGameDTO request);
-    Task<ConsumedQueueDto?> ConsumeAsync();
+    Task<ResponseQueuedDto> PublishAsync(PurchaseGameDTO request, CancellationToken cancellationToken);
+    Task<ConsumedQueueDto?> ConsumeAsync(CancellationToken cancellationToken);
 }

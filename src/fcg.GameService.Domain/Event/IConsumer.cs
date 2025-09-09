@@ -1,6 +1,6 @@
 ﻿namespace fcg.GameService.Domain.Event;
 
-public interface IConsumer
+public interface IConsumer<T> where T : class
 {
-    Task<T> ConsumeAsync<T>() where T : class;
+    Task<T> ConsumeAsync(CancellationToken cancellationToken);
 }

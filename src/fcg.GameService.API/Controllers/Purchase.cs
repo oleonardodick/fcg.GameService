@@ -20,13 +20,13 @@ public class Purchase(
     private readonly IValidator<PurchaseGameDTO> _validatorPurchase = validatorPurchase;
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] PurchaseGameDTO purchase)
+    public async Task<IActionResult> Create([FromBody] PurchaseGameDTO purchase, CancellationToken cancellationToken)
     {
         List<ErrorDetails> errors = ValidationHelper.Validate(_validatorPurchase, purchase);
 
         if (errors.Count > 0)
             throw new AppValidationException(errors);
 
-        return Ok(await _purchaseUseCase.PublishAsync(purchase));
+        return Ok(await _purchaseUseCase.PublishAsync(purchase, cancellationToken));
     }
 }
