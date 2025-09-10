@@ -5,5 +5,6 @@ public enum QueueStatus
     Queued,
     Processing,
     Completed,
-    Failed
+    Failed,
+    Consumed
 }

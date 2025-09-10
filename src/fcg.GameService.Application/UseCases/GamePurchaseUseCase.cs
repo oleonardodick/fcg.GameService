@@ -1,29 +1,31 @@
 ﻿using fcg.GameService.Application.Interfaces;
-using fcg.GameService.Domain.Entities;
 using fcg.GameService.Domain.Enums;
 using fcg.GameService.Domain.Event;
 using fcg.GameService.Domain.Exceptions;
-using fcg.GameService.Domain.Repositories;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.Presentation.DTOs.Game.Responses;
+using fcg.GameService.Presentation.DTOs.GameLibrary.Requests;
+using fcg.GameService.Presentation.DTOs.GameLibrary.Responses;
 using fcg.GameService.Presentation.Event.Consume;
 using fcg.GameService.Presentation.Event.Publish;
 
 namespace fcg.GameService.Application.UseCases;
 
 public class GamePurchaseUseCase(
-    IGameRepository gameRepository,
+    IGameUseCase gameUseCase,
+    IGameLibraryUseCase gameLibraryUseCase,
     IPublisher<GamePurchasePublishEvent> publisher,
     IConsumer<GamePurchaseConsumeEvent> consumer) : IPurchaseUseCase
 {
-    private readonly IGameRepository _gameRepository = gameRepository;
+    private readonly IGameUseCase _gameUseCase = gameUseCase;
+    private readonly IGameLibraryUseCase _gameLibraryUseCase = gameLibraryUseCase;
     private readonly IPublisher<GamePurchasePublishEvent> _publisher = publisher;
     private readonly IConsumer<GamePurchaseConsumeEvent> _consumer = consumer;
     private const string ENTITY = "Jogo";
 
     public async Task<ResponseQueuedDto> PublishAsync(PurchaseGameDTO request, CancellationToken cancellationToken)
     {
-        Game? game = await _gameRepository.GetByIdAsync(request.GameId) ??
+        ResponseGameDTO game = await _gameUseCase.GetByIdAsync(request.GameId) ??
             throw AppNotFoundException.ForEntity(ENTITY, request.GameId);
 
         GamePurchasePublishEvent @event = new()
@@ -39,26 +41,56 @@ public class GamePurchaseUseCase(
 
         return new ResponseQueuedDto
         {
-            IsQueued = true,
             Message = "Pedido de compra realizado com sucesso",
             PaymentId = @event.PaymentId,
-            Status = QueueStatus.Queued
+            Status = QueueStatus.Queued,
+            CorrelationId = @event.CorrelationId
         };
     }
 
-    public async Task<ConsumedQueueDto?> ConsumeAsync(CancellationToken cancellationToken)
+    public async Task<ConsumedQueueDto> ConsumeAsync(CancellationToken cancellationToken)
     {
         GamePurchaseConsumeEvent? @event = await _consumer.ConsumeAsync(cancellationToken);
 
         if (@event is null)
-            return null;
+            return new ConsumedQueueDto { Status = QueueStatus.Failed };
+
+        // Buscar jogo
+        ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(@event.GameId);
+
+        // Criar biblioteca do usuário se não existir
+        ResponseGameLibraryDTO? library = await _gameLibraryUseCase.GetByUserIdAsync(@event.UserId);
+
+        if (library is null)
+        {
+            await _gameLibraryUseCase.CreateAsync(new()
+            {
+                UserId = @event.UserId,
+                Games =
+                [
+                    new()
+                    {
+                        Id = @event.GameId,
+                        Name = game!.Name,
+                        Tags = game!.Tags
+                    }
+                ]
+            });
+        }
+        else
+        {
+            // Adicionar jogo na biblioteca do usuário
+            await _gameLibraryUseCase.AddGameToLibraryAsync(library.Id, new()
+            {
+                Id = @event.GameId,
+                Name = game!.Name,
+                Tags = game!.Tags
+            });
+        }
 
         return new ConsumedQueueDto
         {
-            PaymentId = @event.PaymentId,
-            UserId = @event.UserId,
-            GameId = @event.GameId,
-            CorrelationId = @event.CorrelationId
+            Status = QueueStatus.Consumed
         };
     }
 }
