@@ -23,6 +23,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddProblemDetails();
 
+builder.Services.AddHostedService<GamePurchaseWorker>();
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLoggingConfiguration(builder.Configuration);
 builder.Services.AddApplication();
@@ -39,8 +41,6 @@ builder.Services.AddControllers()
     {
         options.SuppressModelStateInvalidFilter = true;
     });
-
-builder.Services.AddHostedService<GamePurchaseWorker>();
 
 WebApplication app = builder.Build();
 
