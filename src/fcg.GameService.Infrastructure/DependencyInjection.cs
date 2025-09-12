@@ -24,13 +24,13 @@ public static class DependencyInjection
 
         services.AddSingleton(typeof(IElasticClient<>), typeof(ElasticClient<>));
 
+        services.AddScoped<IConsumer<GamePurchaseConsumeEvent>, GamePurchaseConsumer>();
+        services.AddScoped<IPublisher<GamePurchasePublishEvent>, GamePurchasePublisher>();
+
         services.AddScoped<IGameRepository, GameRepository>();
         services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
 
-        services.AddOpenTelemetrySettings(configuration);
-
-        services.AddScoped<IConsumer<GamePurchaseConsumeEvent>, GamePurchaseConsumer>();
-        services.AddScoped<IPublisher<GamePurchasePublishEvent>, GamePurchasePublisher>();
+        services.AddOpenTelemetrySettings(configuration);  
 
         return services;
     }

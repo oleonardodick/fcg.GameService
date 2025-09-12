@@ -15,8 +15,8 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
     public GamePurchaseConsumer(IConfiguration config, IAppLogger<GamePurchaseConsumer> logger)
     {
         _client = new QueueClient(
-            config["AzureStorage:ConnectionString"],
-            config["AzureStorage:QueueName"],
+            config["AzureStorage:ConsumerConnectionString"],
+            config["AzureStorage:ConsumerQueueName"],
             new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 });
 
         _client.CreateIfNotExists();

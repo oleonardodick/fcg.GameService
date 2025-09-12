@@ -4,8 +4,9 @@ namespace fcg.GameService.API.Workers;
 
 public sealed class GamePurchaseWorker(
     IAppLogger<GamePurchaseWorker> _logger,
-    IPurchaseUseCase _purchaseUseCase) : BackgroundService
+    IServiceScopeFactory factory) : BackgroundService
 {
+    private readonly IPurchaseUseCase _purchaseUseCase = factory.CreateScope().ServiceProvider.GetRequiredService<IPurchaseUseCase>();
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)

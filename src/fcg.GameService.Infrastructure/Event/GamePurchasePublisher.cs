@@ -15,8 +15,8 @@ public class GamePurchasePublisher : IPublisher<GamePurchasePublishEvent>
     public GamePurchasePublisher(IConfiguration config, IAppLogger<GamePurchasePublisher> logger)
     {
         _client = new QueueClient(
-            config["AzureStorage:ConnectionString"],
-            config["AzureStorage:QueueName"],
+            config["AzureStorage:ProducerConnectionString"],
+            config["AzureStorage:ProducerQueueName"],
             new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 });
 
         _client.CreateIfNotExists();
