@@ -1,4 +1,5 @@
 using fcg.GameService.API.Middlewares;
+using fcg.GameService.API.Workers;
 using fcg.GameService.Application;
 using fcg.GameService.Application.Mappers;
 using fcg.GameService.Infrastructure;
@@ -38,6 +39,8 @@ builder.Services.AddControllers()
     {
         options.SuppressModelStateInvalidFilter = true;
     });
+
+builder.Services.AddHostedService<GamePurchaseWorker>();
 
 WebApplication app = builder.Build();
 

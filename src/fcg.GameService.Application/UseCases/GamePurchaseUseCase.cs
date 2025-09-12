@@ -4,7 +4,6 @@ using fcg.GameService.Domain.Event;
 using fcg.GameService.Domain.Exceptions;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.Presentation.DTOs.Game.Responses;
-using fcg.GameService.Presentation.DTOs.GameLibrary.Requests;
 using fcg.GameService.Presentation.DTOs.GameLibrary.Responses;
 using fcg.GameService.Presentation.Event.Consume;
 using fcg.GameService.Presentation.Event.Publish;
@@ -12,15 +11,12 @@ using fcg.GameService.Presentation.Event.Publish;
 namespace fcg.GameService.Application.UseCases;
 
 public class GamePurchaseUseCase(
-    IGameUseCase gameUseCase,
-    IGameLibraryUseCase gameLibraryUseCase,
-    IPublisher<GamePurchasePublishEvent> publisher,
-    IConsumer<GamePurchaseConsumeEvent> consumer) : IPurchaseUseCase
+    IGameUseCase _gameUseCase,
+    IGameLibraryUseCase _gameLibraryUseCase,
+    IPublisher<GamePurchasePublishEvent> _publisher,
+    IConsumer<GamePurchaseConsumeEvent> _consumer,
+    IAppLogger<GamePurchaseUseCase> _logger) : IPurchaseUseCase
 {
-    private readonly IGameUseCase _gameUseCase = gameUseCase;
-    private readonly IGameLibraryUseCase _gameLibraryUseCase = gameLibraryUseCase;
-    private readonly IPublisher<GamePurchasePublishEvent> _publisher = publisher;
-    private readonly IConsumer<GamePurchaseConsumeEvent> _consumer = consumer;
     private const string ENTITY = "Jogo";
 
     public async Task<ResponseQueuedDto> PublishAsync(PurchaseGameDTO request, CancellationToken cancellationToken)
@@ -48,12 +44,15 @@ public class GamePurchaseUseCase(
         };
     }
 
-    public async Task<ConsumedQueueDto> ConsumeAsync(CancellationToken cancellationToken)
+    public async Task ConsumeAsync(CancellationToken cancellationToken)
     {
         GamePurchaseConsumeEvent? @event = await _consumer.ConsumeAsync(cancellationToken);
 
         if (@event is null)
-            return new ConsumedQueueDto { Status = QueueStatus.Failed };
+        {
+            _logger.LogWarning("Nenhum evento de compra para processar");
+            return;
+        }
 
         // Buscar jogo
         ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(@event.GameId);
@@ -87,10 +86,5 @@ public class GamePurchaseUseCase(
                 Tags = game!.Tags
             });
         }
-
-        return new ConsumedQueueDto
-        {
-            Status = QueueStatus.Consumed
-        };
     }
 }
