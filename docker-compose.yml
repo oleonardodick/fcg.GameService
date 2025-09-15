@@ -1,64 +1,65 @@
+version: '3.9'
+
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: ${PROJECT_NAME}-mongodb
-    restart: unless-stopped
-    pull_policy: if_not_present
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
-    ports:
-      - "${MONGO_PORT}:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - microservice-network
-
-  gameService-dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-    container_name: dashboard
-    ports:
-      - "${DASHBOARD_PORT}:18888"
-      - "${OTLP_GRPC_PORT}:18889"
-      - "${OTLP_HTTP_PORT}:18890"
-    environment:
-      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
-      - OTEL_LOGS_INCLUDE_TRACE_CONTEXT=true
-    networks:
-      - microservice-network
-
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: ${PROJECT_NAME}-api
-    restart: unless-stopped
-    environment:
-      - MongoDbSettings__ConnectionString=${MONGO_CONNECTION_STRING}
-      - MongoDbSettings__DatabaseName=${MONGO_DATABASE}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_ENDPOINT}
-      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_PROTOCOL}
-      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME}
-      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES}
     ports:
-      - "${API_PORT}:8080"
+      - "5000:5000"   # HTTP
+      - "5001:5001"   # HTTPS
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      DOTNET_RUNNING_IN_CONTAINER: "true"
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "false"
+      ASPNETCORE_URLS: "http://+:5000;https://+:5001"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      MongoDbSettings__ConnectionString: "mongodb://root:example@mongo:27017/FCGGameService?authSource=admin"
+      MongoDbSettings__DatabaseName: "FCGGameService"
     depends_on:
-      - mongodb
-      - gameService-dashboard
-    networks:
-      - microservice-network
+      mongo:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 20s
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: FCGGameService
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--username", "root", "--password", "example", "--eval", "db.adminCommand('ping')"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: mongo
+    depends_on:
+      mongo:
+        condition: service_healthy
 
 volumes:
-  mongodb_data:
+  mongo_data:
     driver: local
-
-networks:
-  microservice-network:
-    driver: bridge
