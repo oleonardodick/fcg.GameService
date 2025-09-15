@@ -28,11 +28,11 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
         try
         {
             var message = await _client.ReceiveMessageAsync(cancellationToken: cancellationToken);
-            _logger.LogInformation("Payment consumed successfully");
+            _logger.LogInformation("Fila de pagamento consumida com sucesso");
 
             if (message.Value == null)
             {
-                _logger.LogWarning("No messages available in the queue.");
+                _logger.LogWarning("Não há mensagens na fila");
                 return null!;
             }
 
@@ -42,7 +42,7 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to consume Payment}");
+            _logger.LogError(ex, "Falha ao consumir fila de pagamento");
             throw;
         }
     }

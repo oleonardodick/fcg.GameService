@@ -29,14 +29,14 @@ public class GamePurchasePublisher : IPublisher<GamePurchasePublishEvent>
         {
             string json = JsonSerializer.Serialize(message);
 
-            _logger.LogInformation("Publishing payment to queue - PaymentId: {PaymentId}, Amount: {Amount}, Currency: {Currency}",
+            _logger.LogInformation("Publicando pagamento na fila - PaymentId: {PaymentId}, Amount: {Amount}, Currency: {Currency}",
                 message.PaymentId, message.Amount, message.Currency);
             await _client.SendMessageAsync(json, cancellationToken: cancellationToken);
-            _logger.LogInformation("Payment published successfully - PaymentId: {PaymentId}", message.PaymentId);
+            _logger.LogInformation("Pagamento publicado com sucesso - PaymentId: {PaymentId}", message.PaymentId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to publish payment - PaymentId: {PaymentId}", message.PaymentId);
+            _logger.LogError(ex, "Falha ao publicar pagamento - PaymentId: {PaymentId}", message.PaymentId);
             throw;
         }
     }

@@ -46,30 +46,36 @@ public class GamePurchaseUseCase(
 
     public async Task ConsumeAsync(CancellationToken cancellationToken)
     {
-        GamePurchaseConsumeEvent? @event = await _consumer.ConsumeAsync(cancellationToken);
+        GamePurchaseConsumeEvent? response = await _consumer.ConsumeAsync(cancellationToken);
 
-        if (@event is null)
+        if (response is null)
         {
             _logger.LogWarning("Nenhum evento de compra para processar");
             return;
         }
 
+        if (response.Status != nameof(PaymentStatus.PaymentApproved))
+        {
+            _logger.LogWarning("Evento de compra com status inválido: {Status}", response.Status);
+            return;
+        }
+
         // Buscar jogo
-        ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(@event.GameId);
+        ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(response.GameId);
 
         // Criar biblioteca do usuário se não existir
-        ResponseGameLibraryDTO? library = await _gameLibraryUseCase.GetByUserIdAsync(@event.UserId);
+        ResponseGameLibraryDTO? library = await _gameLibraryUseCase.GetByUserIdAsync(response.UserId);
 
         if (library is null)
         {
             await _gameLibraryUseCase.CreateAsync(new()
             {
-                UserId = @event.UserId,
+                UserId = response.UserId,
                 Games =
                 [
                     new()
                     {
-                        Id = @event.GameId,
+                        Id = response.GameId,
                         Name = game!.Name,
                         Tags = game!.Tags
                     }
@@ -81,7 +87,7 @@ public class GamePurchaseUseCase(
             // Adicionar jogo na biblioteca do usuário
             await _gameLibraryUseCase.AddGameToLibraryAsync(library.Id, new()
             {
-                Id = @event.GameId,
+                Id = response.GameId,
                 Name = game!.Name,
                 Tags = game!.Tags
             });
