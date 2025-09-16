@@ -31,15 +31,4 @@ EXPOSE 5001
 # Copy published app
 COPY --from=build /app/publish .
 
-# Generate dev HTTPS certificate
-RUN dotnet dev-certs https -ep /https/aspnetapp.pfx -p "Pass@word1" && \
-    mkdir -p /root/.microsoft/usersecrets && \
-    mkdir -p /root/.aspnet/https
-
-ENV ASPNETCORE_URLS="http://+:5000;https://+:5001" \
-    DOTNET_RUNNING_IN_CONTAINER=true \
-    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
-    ASPNETCORE_Kestrel__Certificates__Default__Password="Pass@word1" \
-    ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-
 ENTRYPOINT ["dotnet", "fcg.GameService.API.dll"]
