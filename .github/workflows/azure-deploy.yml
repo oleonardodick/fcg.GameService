@@ -75,8 +75,14 @@ jobs:
           # Common env vars (shared across apps)
           ENV_VARS=(
             "ASPNETCORE_ENVIRONMENT=Production"
-            "MongoDbSettings__ConnectionString=${{ secrets.MONGO_CONNECTION }}"
+            "MongoDbSettings__ConnectionString=${{ secrets.MONGO_CONNECTION}}"
             "MongoDbSettings__DatabaseName=${{secrets.MONGO_DATABASE}}"
+            "ElasticSettings__ApiKey=${{secrets.ELASTIC_APIKEY}}"
+            "ElasticSettings__CloudId=${{secrets.ELASTIC_CLOUDID}}"
+            "AzureStorage__ProducerConnectionString=${{secrets.QUEUE_PRODUCER_CONNECTION}}"
+            "AzureStorage__ProducerQueueName=${{secrets.QUEUE_PRODUCER_NAME}}"
+            "AzureStorage__ConsumerConnectionString=${{secrets.QUEUE_CONSUMER_CONNECTION}}"
+            "AzureStorage__ConsumerQueueName=${{secrets.QUEUE_CONSUMER_NAME}}"
           )
 
           for service in $(docker compose config --services); do
