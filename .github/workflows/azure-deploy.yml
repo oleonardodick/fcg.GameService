@@ -7,12 +7,6 @@ on:
     branches: ["main"]
 
 env:
-  LOCATION: westeurope
-  RESOURCE_GROUP: my-resource-group
-  ACR_NAME: myacrname1234                 # must be globally unique
-  ACR_SKU: Basic
-  ACA_ENV: my-containerapps-env
-  REGISTRY: myacrname1234.azurecr.io
   COMPOSE_FILE: docker-compose.yml
 
 jobs:
@@ -59,16 +53,16 @@ jobs:
       # Ensure RG, ACR, and ACA environment exist
       - name: Ensure Azure Resources
         run: |
-          az group create -n ${{ env.RESOURCE_GROUP }} -l ${{ env.LOCATION }}
+          az group create -n ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
 
-          az acr show -n ${{ env.ACR_NAME }} -g ${{ env.RESOURCE_GROUP }} \
-          || az acr create -n ${{ env.ACR_NAME }} -g ${{ env.RESOURCE_GROUP }} --sku ${{ env.ACR_SKU }}
+          az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} \
+          || az acr create -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --sku ${{ vars.ACR_SKU }}
 
-          az containerapp env show -n ${{ env.ACA_ENV }} -g ${{ env.RESOURCE_GROUP }} \
-          || az containerapp env create -n ${{ env.ACA_ENV }} -g ${{ env.RESOURCE_GROUP }} -l ${{ env.LOCATION }}
+          az containerapp env show -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} \
+          || az containerapp env create -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
 
       - name: ACR Login
-        run: az acr login --name ${{ env.ACR_NAME }}
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build and Push images
         run: |
@@ -86,51 +80,51 @@ jobs:
           )
 
           for service in $(docker compose config --services); do
-            IMAGE=${{ env.REGISTRY }}/$service:latest
+            IMAGE=${{ vars.REGISTRY }}/$service:latest
             echo "Deploying $service -> $IMAGE"
 
             if [ "$service" == "mongo" ]; then
               # MongoDB should be internal only
-              az containerapp show --name $service --resource-group ${{ env.RESOURCE_GROUP }} > /dev/null 2>&1 \
+              az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
               || az containerapp create \
                 --name $service \
-                --resource-group ${{ env.RESOURCE_GROUP }} \
-                --environment ${{ env.ACA_ENV }} \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --environment ${{ vars.ACA_ENV }} \
                 --image $IMAGE \
                 --ingress internal \
                 --target-port 27017 \
                 --min-replicas 1 \
                 --max-replicas 1 \
-                --registry-server ${{ env.REGISTRY }} \
-                --registry-username $(az acr credential show -n ${{ env.ACR_NAME }} --query "username" -o tsv) \
-                --registry-password $(az acr credential show -n ${{ env.ACR_NAME }} --query "passwords[0].value" -o tsv)
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv)
 
               az containerapp update \
                 --name $service \
-                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
                 --image $IMAGE
             else
               # API services → external ingress + HTTPS + probes
-              az containerapp show --name $service --resource-group ${{ env.RESOURCE_GROUP }} > /dev/null 2>&1 \
+              az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
               || az containerapp create \
                 --name $service \
-                --resource-group ${{ env.RESOURCE_GROUP }} \
-                --environment ${{ env.ACA_ENV }} \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --environment ${{ vars.ACA_ENV }} \
                 --image $IMAGE \
                 --target-port 5000 \
                 --ingress external \
                 --transport auto \
                 --min-replicas 1 \
                 --max-replicas 3 \
-                --registry-server ${{ env.REGISTRY }} \
-                --registry-username $(az acr credential show -n ${{ env.ACR_NAME }} --query "username" -o tsv) \
-                --registry-password $(az acr credential show -n ${{ env.ACR_NAME }} --query "passwords[0].value" -o tsv) \
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
                 --env-vars ${ENV_VARS[@]}
 
               # Add health probes (liveness/readiness)
               az containerapp update \
                 --name $service \
-                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
                 --image $IMAGE \
                 --set-probes '[{"type":"liveness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":10,"periodSeconds":30},{"type":"readiness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":5,"periodSeconds":15}]'
             fi
