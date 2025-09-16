@@ -1,4 +1,5 @@
 using fcg.GameService.API.Middlewares;
+using fcg.GameService.API.Workers;
 using fcg.GameService.Application;
 using fcg.GameService.Application.Mappers;
 using fcg.GameService.Infrastructure;
@@ -21,6 +22,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddProblemDetails();
+
+builder.Services.AddHostedService<GamePurchaseWorker>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLoggingConfiguration(builder.Configuration);

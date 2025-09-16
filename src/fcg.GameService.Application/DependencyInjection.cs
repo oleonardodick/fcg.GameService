@@ -13,6 +13,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddScoped<IPurchaseUseCase, GamePurchaseUseCase>();
         services.AddScoped<IGameUseCase, GameUseCase>();
         services.AddScoped<IGameLibraryUseCase, GameLibraryUseCase>();
         services.AddScoped<ISuggestionUseCase, SuggestionUseCase>();
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IValidator<CreateGameLibraryDTO>, CreateGameLibraryDTOValidator>();
         services.AddScoped<IValidator<AddGameToLibraryDTO>, AddGameToLibraryDTOValidator>();
         services.AddScoped<IValidator<RemoveGameFromLibraryDTO>, RemoveGameFromLibraryDTOValidator>();
+        services.AddScoped<IValidator<PurchaseGameDTO>, PurchaseGameDTOValidator>();
 
         services.AddSingleton<IErrorResponseFactory, ErrorResponseFactory>();
 
