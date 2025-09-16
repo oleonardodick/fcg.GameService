@@ -1,9 +1,9 @@
 name: CI-CD Azure Container Apps (.NET 8 Docker)
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
+    branches: ["*"]
+  push:
     branches: ["main"]
 
 env:
@@ -16,8 +16,8 @@ env:
   COMPOSE_FILE: docker-compose.yml
 
 jobs:
-  build-test-push:
-    name: Build, Test, and Push Docker Images
+  build-test:
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -37,6 +37,19 @@ jobs:
 
       - name: Run tests
         run: dotnet test tests/fcg.GameService.UnitTests/fcg.GameService.UnitTests.csproj --no-build --configuration Release --verbosity normal
+
+      - name: Validate docker-compose build
+        run: docker compose -f ${{ env.COMPOSE_FILE }} build
+
+  deploy:
+    name: Deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Azure login
         uses: azure/login@v2
@@ -62,20 +75,6 @@ jobs:
           VERSION=latest
           docker compose -f ${{ env.COMPOSE_FILE }} build
           docker compose -f ${{ env.COMPOSE_FILE }} push
-
-  deploy:
-    name: Deploy to Azure Container Apps
-    runs-on: ubuntu-latest
-    needs: build-test-push
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Azure login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy services with ingress, secrets, and probes
         run: |
