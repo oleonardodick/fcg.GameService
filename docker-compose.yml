@@ -15,8 +15,14 @@ services:
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "false"
       ASPNETCORE_URLS: "http://+:5000;https://+:5001"
       ASPNETCORE_ENVIRONMENT: "Development"
-      MongoDbSettings__ConnectionString: "mongodb://root:example@mongo:27017/FCGGameService?authSource=admin"
-      MongoDbSettings__DatabaseName: "FCGGameService"
+      MongoDbSettings__ConnectionString: ""
+      MongoDbSettings__DatabaseName: ""
+      ElasticSettings__ApiKey: ""
+      ElasticSettings__CloudId: ""
+      AzureStorage__ProducerConnectionString: ""
+      AzureStorage__ProducerQueueName: ""
+      AzureStorage__ConsumerConnectionString: ""
+      AzureStorage__ConsumerQueueName: ""
     depends_on:
       mongo:
         condition: service_healthy
@@ -35,12 +41,12 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_PASSWORD: fcg!d4t4b4s3
       MONGO_INITDB_DATABASE: FCGGameService
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--username", "root", "--password", "example", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--username", "root", "--password", "fcg!d4t4b4s3", "--eval", "db.adminCommand('ping')"]
       interval: 20s
       timeout: 10s
       retries: 5
@@ -54,7 +60,7 @@ services:
       - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_ADMINPASSWORD: fcg!d4t4b4s3
       ME_CONFIG_MONGODB_SERVER: mongo
     depends_on:
       mongo:

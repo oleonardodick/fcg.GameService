@@ -1,4 +1,4 @@
-name: CI-CD Azure Container Apps (.NET 8 Docker)
+name: Build, Test & Deploy to Azure Container Apps
 
 on:
   pull_request:
