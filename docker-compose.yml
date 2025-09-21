@@ -15,14 +15,13 @@ services:
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "false"
       ASPNETCORE_URLS: "http://+:5000;https://+:5001"
       ASPNETCORE_ENVIRONMENT: "Development"
-      MongoDbSettings__ConnectionString: ""
-      MongoDbSettings__DatabaseName: ""
-      ElasticSettings__ApiKey: ""
-      ElasticSettings__CloudId: ""
-      AzureStorage__ProducerConnectionString: ""
-      AzureStorage__ProducerQueueName: ""
-      AzureStorage__ConsumerConnectionString: ""
-      AzureStorage__ConsumerQueueName: ""
+      MongoDbSettings_ConnectionString: ""
+      MongoDbSettings_DatabaseName: ""
+      ElasticSettings_ApiKey: ""
+      ElasticSettings_CloudId: ""
+      AzureStorage_ConnectionString: ""
+      AzureStorage_ProducerQueueName: ""
+      AzureStorage_ConsumerQueueName: ""
     depends_on:
       mongo:
         condition: service_healthy
