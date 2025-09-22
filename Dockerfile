@@ -1,6 +1,5 @@
-# Build stage
+# BUILD STAGE
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-
 WORKDIR /src
 
 # restore
@@ -10,7 +9,6 @@ COPY src/fcg.GameService.Application/fcg.GameService.Application.csproj src/fcg.
 COPY src/fcg.GameService.Domain/fcg.GameService.Domain.csproj src/fcg.GameService.Domain/
 COPY src/fcg.GameService.Infrastructure/fcg.GameService.Infrastructure.csproj src/fcg.GameService.Infrastructure/
 COPY src/fcg.GameService.Presentation/fcg.GameService.Presentation.csproj src/fcg.GameService.Presentation/ 
-
 RUN dotnet restore src/fcg.GameService.API/fcg.GameService.API.csproj
 
 #Copia o restante do código
@@ -19,14 +17,14 @@ COPY . .
 # Realiza o publish em modo release
 RUN dotnet publish src/fcg.GameService.API/fcg.GameService.API.csproj -c Release -o /app/publish
 
-# Run stage
-FROM  mcr.microsoft.com/dotnet/aspnet:8.0 AS final
-
+# RUNTIME STAGE
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
+EXPOSE 5000
+EXPOSE 5001
+
+# Copia os arquivos publicados da etapa de build
 COPY --from=build /app/publish .
 
-EXPOSE 8080
-
-#Entrypoint
 ENTRYPOINT ["dotnet", "fcg.GameService.API.dll"]

@@ -2,8 +2,7 @@
 
 public enum PaymentStatus
 {
-    PaymentProcessing,
-    PaymentApproved,
-    PaymentDeclined,
-    PaymentFailed
+    Approved,
+    Declined,
+    Failed
 }

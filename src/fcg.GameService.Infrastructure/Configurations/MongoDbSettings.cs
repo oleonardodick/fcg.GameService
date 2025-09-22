@@ -1,41 +1,32 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace fcg.GameService.Infrastructure.Configurations;
 
-public class MongoDbSettings
+public static class MongoDbSettings
 {
-    public string ConnectionString { get; set; } = string.Empty;
-    public string DatabaseName { get; set; } = string.Empty;
+    public static string ConnectionString { get; } =
+        Environment.GetEnvironmentVariable("MongoDbSettings_ConnectionString")!;
+    public static string DatabaseName { get; } =
+        Environment.GetEnvironmentVariable("MongoDbSettings_DatabaseName")!;
 }
 
 public static class MongoDbService
 {
-    public static IServiceCollection AddMongoDBService(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMongoDBService(this IServiceCollection services)
     {
-        MongoDbSettings mongoDbSettings = new();
-        configuration.GetSection(nameof(MongoDbSettings)).Bind(mongoDbSettings);
-
         services.AddHealthChecks()
             .AddMongoDb(
-                mongodbConnectionString: mongoDbSettings!.ConnectionString,
+                mongodbConnectionString: MongoDbSettings.ConnectionString,
                 name: "mongodb",
                 timeout: TimeSpan.FromSeconds(5),
                 tags: ["db", "mongo"]
             );
 
-        services.Configure<MongoDbSettings>(
-            configuration.GetSection(nameof(MongoDbSettings))
-        );
-
         services.AddSingleton<IMongoClient>(sp =>
         {
-            MongoDbSettings mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-
-            MongoClientSettings settings = MongoClientSettings.FromConnectionString(mongoDbSettings.ConnectionString);
+            MongoClientSettings settings = MongoClientSettings.FromConnectionString(MongoDbSettings.ConnectionString);
 
             settings.ClusterConfigurator = cb =>
             {
@@ -52,7 +43,7 @@ public static class MongoDbService
         services.AddSingleton(sp =>
         {
             IMongoClient client = sp.GetRequiredService<IMongoClient>();
-            return client.GetDatabase(mongoDbSettings.DatabaseName);
+            return client.GetDatabase(MongoDbSettings.DatabaseName);
         });
 
         return services;

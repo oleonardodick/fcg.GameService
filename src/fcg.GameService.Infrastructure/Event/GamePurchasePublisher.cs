@@ -2,7 +2,6 @@
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Domain.Event;
 using fcg.GameService.Presentation.Event.Publish;
-using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
 namespace fcg.GameService.Infrastructure.Event;
@@ -12,11 +11,11 @@ public class GamePurchasePublisher : IPublisher<GamePurchasePublishEvent>
     private readonly QueueClient _client;
     private readonly IAppLogger<GamePurchasePublisher> _logger;
 
-    public GamePurchasePublisher(IConfiguration config, IAppLogger<GamePurchasePublisher> logger)
+    public GamePurchasePublisher(IAppLogger<GamePurchasePublisher> logger)
     {
         _client = new QueueClient(
-            config["AzureStorage:ProducerConnectionString"],
-            config["AzureStorage:ProducerQueueName"],
+            Environment.GetEnvironmentVariable("AzureStorage_ConnectionString"),
+            Environment.GetEnvironmentVariable("AzureStorage_ProducerQueueName"),
             new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 });
 
         _client.CreateIfNotExists();

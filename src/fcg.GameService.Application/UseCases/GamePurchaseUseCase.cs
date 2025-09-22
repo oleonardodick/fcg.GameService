@@ -54,9 +54,9 @@ public class GamePurchaseUseCase(
             return;
         }
 
-        if (response.Status != nameof(PaymentStatus.PaymentApproved))
+        if (!response.Status.Equals(nameof(PaymentStatus.Approved), StringComparison.InvariantCultureIgnoreCase))
         {
-            _logger.LogWarning("Evento de compra com status inválido: {Status}", response.Status);
+            _logger.LogWarning("Compra não aprovada, motivo: {Reason}", response.Reason!);
             return;
         }
 

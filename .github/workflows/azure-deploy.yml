@@ -1,0 +1,137 @@
+name: Build, Test & Deploy to Azure Container Apps
+
+on:
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: ["main"]
+
+env:
+  COMPOSE_FILE: docker-compose.yml
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test tests/fcg.GameService.UnitTests/fcg.GameService.UnitTests.csproj --no-build --configuration Release --verbosity normal
+
+      - name: Validate docker-compose build
+        run: docker compose -f ${{ env.COMPOSE_FILE }} build
+
+  deploy:
+    name: Deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Ensure RG, ACR, and ACA environment exist
+      - name: Ensure Azure Resources
+        run: |
+          az group create -n ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
+
+          az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} \
+          || az acr create -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --sku ${{ vars.ACR_SKU }}
+
+          az containerapp env show -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} \
+          || az containerapp env create -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
+
+      - name: ACR Login
+        run: az acr login --name ${{ vars.ACR_NAME }}
+
+      - name: Build and Push images
+        run: |
+          VERSION=latest
+          docker compose -f ${{ env.COMPOSE_FILE }} build
+          docker compose -f ${{ env.COMPOSE_FILE }} push
+
+      - name: Deploy services with ingress, secrets, and probes
+        run: |
+          # Common env vars (shared across apps)
+          ENV_VARS=(
+            "ASPNETCORE_ENVIRONMENT=Production"
+            "MongoDbSettings_ConnectionString=${{ secrets.MONGO_CONNECTION}}"
+            "MongoDbSettings_DatabaseName=${{secrets.MONGO_DATABASE}}"
+            "ElasticSettings_ApiKey=${{secrets.ELASTIC_APIKEY}}"
+            "ElasticSettings_CloudId=${{secrets.ELASTIC_CLOUDID}}"
+            "AzureStorage_ConnectionString=${{secrets.QUEUE_CONNECTION}}"
+            "AzureStorage_ProducerQueueName=${{secrets.QUEUE_PRODUCER_NAME}}"
+            "AzureStorage_ConsumerQueueName=${{secrets.QUEUE_CONSUMER_NAME}}"
+          )
+
+          for service in $(docker compose config --services); do
+            IMAGE=${{ vars.REGISTRY }}/$service:latest
+            echo "Deploying $service -> $IMAGE"
+
+            if [ "$service" == "mongo" ]; then
+              # MongoDB should be internal only
+              az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
+              || az containerapp create \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --environment ${{ vars.ACA_ENV }} \
+                --image $IMAGE \
+                --ingress internal \
+                --target-port 27017 \
+                --min-replicas 1 \
+                --max-replicas 1 \
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv)
+
+              az containerapp update \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --image $IMAGE
+            else
+              # API services → external ingress + HTTPS + probes
+              az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
+              || az containerapp create \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --environment ${{ vars.ACA_ENV }} \
+                --image $IMAGE \
+                --target-port 5000 \
+                --ingress external \
+                --transport auto \
+                --min-replicas 1 \
+                --max-replicas 3 \
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
+                --env-vars ${ENV_VARS[@]}
+
+              # Add health probes (liveness/readiness)
+              az containerapp update \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --image $IMAGE \
+                --set-probes '[{"type":"liveness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":10,"periodSeconds":30},{"type":"readiness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":5,"periodSeconds":15}]'
+            fi
+          done
+

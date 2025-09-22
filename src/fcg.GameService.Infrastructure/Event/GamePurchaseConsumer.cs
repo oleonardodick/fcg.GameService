@@ -2,7 +2,6 @@
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Domain.Event;
 using fcg.GameService.Presentation.Event.Consume;
-using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
 namespace fcg.GameService.Infrastructure.Event;
@@ -12,11 +11,11 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
     private readonly QueueClient _client;
     private readonly IAppLogger<GamePurchaseConsumer> _logger;
 
-    public GamePurchaseConsumer(IConfiguration config, IAppLogger<GamePurchaseConsumer> logger)
+    public GamePurchaseConsumer(IAppLogger<GamePurchaseConsumer> logger)
     {
         _client = new QueueClient(
-            config["AzureStorage:ConsumerConnectionString"],
-            config["AzureStorage:ConsumerQueueName"],
+            Environment.GetEnvironmentVariable("AzureStorage_ConnectionString"),
+            Environment.GetEnvironmentVariable("AzureStorage_ConsumerQueueNamee"),
             new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 });
 
         _client.CreateIfNotExists();
@@ -27,7 +26,7 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
     {
         try
         {
-            var message = await _client.ReceiveMessageAsync(cancellationToken: cancellationToken);
+            Azure.Response<Azure.Storage.Queues.Models.QueueMessage> message = await _client.ReceiveMessageAsync(cancellationToken: cancellationToken);
             _logger.LogInformation("Fila de pagamento consumida com sucesso");
 
             if (message.Value == null)
