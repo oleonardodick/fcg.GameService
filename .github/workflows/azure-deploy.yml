@@ -41,6 +41,10 @@ jobs:
     needs: build-test
     if: github.ref == 'refs/heads/main'
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
