@@ -49,6 +49,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Login to Azure
       - name: Azure login
         uses: azure/login@v2
         with:
