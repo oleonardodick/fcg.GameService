@@ -66,7 +66,7 @@ jobs:
           || az acr create -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --sku ${{ vars.ACR_SKU }}
 
           az role assignment create \
-          --assignee <secrets.AZURE_CLIENT_ID> \
+          --assignee ${{ secrets.AZURE_CLIENT_ID }} \
           --role AcrPush \
           --scope $(az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --query id -o tsv)
 
