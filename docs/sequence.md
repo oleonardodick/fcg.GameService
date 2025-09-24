@@ -111,7 +111,7 @@
                 Service ->> Queue: Publica evento "game-purchase-requested"
 
                 loop Busca evento de pagamento
-                    Worker ->> Queue: Busca eventos
+                    Worker ->> Queue: Busca evento "game-purchase-completed"
                     Queue -->> Worker: Evento encontrado
                     Worker ->> Service: Chama o consumer
                     
