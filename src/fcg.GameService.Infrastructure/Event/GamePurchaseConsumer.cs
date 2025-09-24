@@ -2,6 +2,7 @@
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Domain.Event;
 using fcg.GameService.Presentation.Event.Consume;
+using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
 namespace fcg.GameService.Infrastructure.Event;
@@ -11,11 +12,11 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
     private readonly QueueClient _client;
     private readonly IAppLogger<GamePurchaseConsumer> _logger;
 
-    public GamePurchaseConsumer(IAppLogger<GamePurchaseConsumer> logger)
+    public GamePurchaseConsumer(IConfiguration config, IAppLogger<GamePurchaseConsumer> logger)
     {
         _client = new QueueClient(
-            Environment.GetEnvironmentVariable("AzureStorage_ConnectionString"),
-            Environment.GetEnvironmentVariable("AzureStorage_ConsumerQueueNamee"),
+            config["AzureStorage:ConnectionString"],
+            config["AzureStorage:ConsumerQueueName"],
             new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 });
 
         _client.CreateIfNotExists();

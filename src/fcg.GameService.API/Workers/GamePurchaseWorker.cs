@@ -11,8 +11,21 @@ public sealed class GamePurchaseWorker(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            await _purchaseUseCase.ConsumeAsync(stoppingToken);
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                await _purchaseUseCase.ConsumeAsync(stoppingToken);
+            }
+            catch (TaskCanceledException)
+            {
+                // Ignorar a exceção quando o token de cancelamento for acionado
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao processar a fila de compras");
+            }
         }
     }
 }

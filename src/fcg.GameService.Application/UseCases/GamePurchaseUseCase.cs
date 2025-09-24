@@ -46,51 +46,59 @@ public class GamePurchaseUseCase(
 
     public async Task ConsumeAsync(CancellationToken cancellationToken)
     {
-        GamePurchaseConsumeEvent? response = await _consumer.ConsumeAsync(cancellationToken);
-
-        if (response is null)
+        try
         {
-            _logger.LogWarning("Nenhum evento de compra para processar");
-            return;
-        }
+            GamePurchaseConsumeEvent? response = await _consumer.ConsumeAsync(cancellationToken);
 
-        if (!response.Status.Equals(nameof(PaymentStatus.Approved), StringComparison.InvariantCultureIgnoreCase))
-        {
-            _logger.LogWarning("Compra não aprovada, motivo: {Reason}", response.Reason!);
-            return;
-        }
-
-        // Buscar jogo
-        ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(response.GameId);
-
-        // Criar biblioteca do usuário se não existir
-        ResponseGameLibraryDTO? library = await _gameLibraryUseCase.GetByUserIdAsync(response.UserId);
-
-        if (library is null)
-        {
-            await _gameLibraryUseCase.CreateAsync(new()
+            if (response is null)
             {
-                UserId = response.UserId,
-                Games =
-                [
-                    new()
+                _logger.LogWarning("Nenhum evento de compra para processar");
+                return;
+            }
+
+            if (!response.Status.Equals(nameof(PaymentStatus.Approved), StringComparison.InvariantCultureIgnoreCase))
+            {
+                _logger.LogWarning("Compra não aprovada, motivo: {Reason}", response.Reason!);
+                return;
+            }
+
+            // Buscar jogo
+            ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(response.GameId);
+
+            // Criar biblioteca do usuário se não existir
+            ResponseGameLibraryDTO? library = await _gameLibraryUseCase.GetByUserIdAsync(response.UserId);
+
+            if (library is null)
+            {
+                await _gameLibraryUseCase.CreateAsync(new()
+                {
+                    UserId = response.UserId,
+                    Games =
+                    [
+                        new()
                     {
                         Id = response.GameId,
                         Name = game!.Name,
                         Tags = game!.Tags
                     }
-                ]
-            });
-        }
-        else
-        {
-            // Adicionar jogo na biblioteca do usuário
-            await _gameLibraryUseCase.AddGameToLibraryAsync(library.Id, new()
+                    ]
+                });
+            }
+            else
             {
-                Id = response.GameId,
-                Name = game!.Name,
-                Tags = game!.Tags
-            });
+                // Adicionar jogo na biblioteca do usuário
+                await _gameLibraryUseCase.AddGameToLibraryAsync(library.Id, new()
+                {
+                    Id = response.GameId,
+                    Name = game!.Name,
+                    Tags = game!.Tags
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao processar evento de compra");
+            throw;
         }
     }
 }

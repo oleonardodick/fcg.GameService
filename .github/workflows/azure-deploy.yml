@@ -82,44 +82,44 @@ jobs:
           # Common env vars (shared across apps)
           ENV_VARS=(
             "ASPNETCORE_ENVIRONMENT=Production"
-            "MongoDbSettings_ConnectionString=${{ secrets.MONGO_CONNECTION}}"
-            "MongoDbSettings_DatabaseName=${{secrets.MONGO_DATABASE}}"
-            "ElasticSettings_ApiKey=${{secrets.ELASTIC_APIKEY}}"
-            "ElasticSettings_CloudId=${{secrets.ELASTIC_CLOUDID}}"
-            "AzureStorage_ConnectionString=${{secrets.QUEUE_CONNECTION}}"
-            "AzureStorage_ProducerQueueName=${{secrets.QUEUE_PRODUCER_NAME}}"
-            "AzureStorage_ConsumerQueueName=${{secrets.QUEUE_CONSUMER_NAME}}"
+            "MongoDbSettings__ConnectionString=${{ secrets.MONGO_CONNECTION}}"
+            "MongoDbSettings__DatabaseName=${{secrets.MONGO_DATABASE}}"
+            "ElasticSettings__ApiKey=${{secrets.ELASTIC_APIKEY}}"
+            "ElasticSettings__CloudId=${{secrets.ELASTIC_CLOUDID}}"
+            "AzureStorage__ConnectionString=${{secrets.QUEUE_CONNECTION}}"
+            "AzureStorage__ProducerQueueName=${{secrets.QUEUE_PRODUCER_NAME}}"
+            "AzureStorage__ConsumerQueueName=${{secrets.QUEUE_CONSUMER_NAME}}"
           )
 
-          for service in $(docker compose config --services); do
+          # Get services from docker-compose
+          SERVICES=$(docker compose -f ${{ env.COMPOSE_FILE }} config --services | xargs)
+
+          for service in $SERVICES; do
             IMAGE=${{ vars.REGISTRY }}/$service:latest
             echo "Deploying $service -> $IMAGE"
 
-            if [ "$service" == "mongo" ]; then
-              # MongoDB should be internal only
-              az acr update -n ${{ vars.ACR_NAME }} --admin-enabled true
-              
-              az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
-              || az containerapp create \
-                --name $service \
-                --resource-group ${{ vars.RESOURCE_GROUP }} \
-                --environment ${{ vars.ACA_ENV }} \
-                --image $IMAGE \
-                --ingress internal \
-                --target-port 27017 \
-                --min-replicas 1 \
-                --max-replicas 1 \
-                --registry-server ${{ vars.REGISTRY }} \
-                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
-                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv)
+            az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
+            || az containerapp create \
+              --name $service \
+              --resource-group ${{ vars.RESOURCE_GROUP }} \
+              --environment ${{ vars.ACA_ENV }} \
+              --image $IMAGE \
+              --target-port 5000 \
+              --ingress external \
+              --transport auto \
+              --min-replicas 1 \
+              --max-replicas 3 \
+              --registry-server ${{ vars.REGISTRY }} \
+              --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+              --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
+              --env-vars ${ENV_VARS[@]}
 
-              az containerapp update \
-                --name $service \
-                --resource-group ${{ vars.RESOURCE_GROUP }} \
-                --image $IMAGE
-            else
-              # API services → external ingress + HTTPS + probes
-              az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
+            az containerapp update \
+              --name $service \
+              --resource-group ${{ vars.RESOURCE_GROUP }} \
+              --image $IMAGE \
+              --set-probes '[{"type":"liveness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":10,"periodSeconds":30},{"type":"readiness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":5,"periodSeconds":15}]'
+          done
               || az containerapp create \
                 --name $service \
                 --resource-group ${{ vars.RESOURCE_GROUP }} \

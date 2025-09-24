@@ -1,9 +1,9 @@
-﻿namespace fcg.GameService.Infrastructure.Configurations;
+﻿using fcg.GameService.Domain.Elasticsearch;
 
-public static class ElasticSettings
+namespace fcg.GameService.Infrastructure.Configurations;
+
+public class ElasticSettings : IElasticSettings
 {
-    public static string ApiKey { get; } =
-        Environment.GetEnvironmentVariable("ElasticSettings_ApiKey")!;
-    public static string CloudId { get; } =
-        Environment.GetEnvironmentVariable("ElasticSettings_CloudId")!;
+    public string ApiKey { get; set; } = null!;
+    public string CloudId { get; set; } = null!;
 }

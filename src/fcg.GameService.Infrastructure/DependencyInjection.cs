@@ -9,6 +9,7 @@ using fcg.GameService.Presentation.Event.Consume;
 using fcg.GameService.Presentation.Event.Publish;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace fcg.GameService.Infrastructure;
 
@@ -16,7 +17,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMongoDBService();
+        services.AddMongoDBService(configuration);
+
+        services.Configure<ElasticSettings>(configuration.GetSection(nameof(ElasticSettings)));
+        services.AddSingleton<IElasticSettings>(sp => sp.GetRequiredService<IOptions<ElasticSettings>>().Value);
 
         services.AddSingleton(typeof(IElasticClient<>), typeof(ElasticClient<>));
 

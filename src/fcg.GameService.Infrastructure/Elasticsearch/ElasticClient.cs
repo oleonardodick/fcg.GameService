@@ -3,13 +3,12 @@ using Elastic.Clients.Elasticsearch.QueryDsl;
 using Elastic.Transport;
 using fcg.GameService.Domain.Elasticsearch;
 using fcg.GameService.Domain.Models;
-using fcg.GameService.Infrastructure.Configurations;
 
 namespace fcg.GameService.Infrastructure.Elasticsearch;
 
-public class ElasticClient<T>() : IElasticClient<T>
+public class ElasticClient<T>(IElasticSettings settings) : IElasticClient<T>
 {
-    private readonly ElasticsearchClient _client = new(ElasticSettings.CloudId, new ApiKey(ElasticSettings.ApiKey));
+    private readonly ElasticsearchClient _client = new(settings.CloudId, new ApiKey(settings.ApiKey));
 
     public async Task<IReadOnlyCollection<T>> Get(ElasticLogRequest elasticLogRequest)
     {
