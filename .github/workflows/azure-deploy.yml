@@ -65,11 +65,6 @@ jobs:
           az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} \
           || az acr create -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --sku ${{ vars.ACR_SKU }}
 
-          az role assignment create \
-          --assignee ${{ secrets.AZURE_CLIENT_ID }} \
-          --role AcrPush \
-          --scope $(az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --query id -o tsv)
-
           az containerapp env show -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} \
           || az containerapp env create -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
 
@@ -79,8 +74,17 @@ jobs:
       - name: Build and Push images
         run: |
           VERSION=latest
+          # Build local images
           docker compose -f ${{ env.COMPOSE_FILE }} build
-          docker compose -f ${{ env.COMPOSE_FILE }} push
+
+          # Tag and push each service image to ACR
+          SERVICES=$(docker compose -f ${{ env.COMPOSE_FILE }} config --services | xargs)
+          for service in $SERVICES; do
+            LOCAL_IMAGE=$(docker compose -f ${{ env.COMPOSE_FILE }} config | awk "/image:/ && /$service/ {print \$2}")
+            ACR_IMAGE="${{ vars.REGISTRY }}/$service:latest"
+            docker tag $LOCAL_IMAGE $ACR_IMAGE
+            docker push $ACR_IMAGE
+          done
 
       - name: Deploy services with ingress, secrets, and probes
         run: |
