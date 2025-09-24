@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: fcg.gameservice.api
+    image: fcggameservice-api
     container_name: FCGGameService-api
     restart: unless-stopped
     ports:
