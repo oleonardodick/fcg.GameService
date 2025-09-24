@@ -113,7 +113,7 @@ jobs:
               --resource-group ${{ vars.RESOURCE_GROUP }} \
               --environment ${{ vars.ACA_ENV }} \
               --image $IMAGE \
-              --target-port 5000 \
+              --target-port 8080 \
               --ingress external \
               --transport auto \
               --min-replicas 1 \
