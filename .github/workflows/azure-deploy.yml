@@ -65,6 +65,11 @@ jobs:
           az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} \
           || az acr create -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --sku ${{ vars.ACR_SKU }}
 
+          az role assignment create \
+          --assignee <secrets.AZURE_CLIENT_ID> \
+          --role AcrPush \
+          --scope $(az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --query id -o tsv)
+
           az containerapp env show -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} \
           || az containerapp env create -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
 
