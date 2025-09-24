@@ -123,33 +123,23 @@ jobs:
               --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
               --env-vars ${ENV_VARS[@]}
 
-            az containerapp update \
+            # Set probes using the supported az containerapp probe commands
+            az containerapp probe add \
               --name $service \
               --resource-group ${{ vars.RESOURCE_GROUP }} \
-              --image $IMAGE \
-              --set-probes '[{"type":"liveness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":10,"periodSeconds":30},{"type":"readiness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":5,"periodSeconds":15}]'
-          done
-              || az containerapp create \
-                --name $service \
-                --resource-group ${{ vars.RESOURCE_GROUP }} \
-                --environment ${{ vars.ACA_ENV }} \
-                --image $IMAGE \
-                --target-port 5000 \
-                --ingress external \
-                --transport auto \
-                --min-replicas 1 \
-                --max-replicas 3 \
-                --registry-server ${{ vars.REGISTRY }} \
-                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
-                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
-                --env-vars ${ENV_VARS[@]}
+              --type liveness \
+              --http-path /health \
+              --port 5000 \
+              --initial-delay 10 \
+              --interval 30
 
-              # Add health probes (liveness/readiness)
-              az containerapp update \
-                --name $service \
-                --resource-group ${{ vars.RESOURCE_GROUP }} \
-                --image $IMAGE \
-                --set-probes '[{"type":"liveness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":10,"periodSeconds":30},{"type":"readiness","httpGet":{"path":"/health","port":5000},"initialDelaySeconds":5,"periodSeconds":15}]'
-            fi
+            az containerapp probe add \
+              --name $service \
+              --resource-group ${{ vars.RESOURCE_GROUP }} \
+              --type readiness \
+              --http-path /health \
+              --port 5000 \
+              --initial-delay 5 \
+              --interval 15
           done
 
