@@ -121,25 +121,5 @@ jobs:
               --registry-server ${{ vars.REGISTRY }} \
               --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
               --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
-              --env-vars ${ENV_VARS[@]} \
-              --probe-liveness-type http \
-              --probe-liveness-http-path /health \
-              --probe-liveness-http-port 5000 \
-              --probe-liveness-initial-delay 10 \
-              --probe-liveness-interval 30 \
-              --probe-readiness-type http \
-              --probe-readiness-http-path /health \
-              --probe-readiness-http-port 5000 \
-              --probe-readiness-initial-delay 5 \
-              --probe-readiness-interval 15
+              --env-vars ${ENV_VARS[@]}
           done
-            az containerapp probe add \
-              --name $service \
-              --resource-group ${{ vars.RESOURCE_GROUP }} \
-              --type readiness \
-              --http-path /health \
-              --port 5000 \
-              --initial-delay 5 \
-              --interval 15
-          done
-
