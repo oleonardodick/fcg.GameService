@@ -14,8 +14,8 @@ public sealed class GamePurchaseWorker(
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await _purchaseUseCase.ConsumeAsync(stoppingToken);
+                //_logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                //await _purchaseUseCase.ConsumeAsync(stoppingToken);
             }
             catch (TaskCanceledException)
             {
