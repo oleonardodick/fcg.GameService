@@ -80,13 +80,11 @@ OTEL_RESOURCE_ATTRIBUTES=service.version=1.0.0,deployment.environment=dev
 MONGO_CONNECTION_TIMEOUT=30
 MONGO_MAX_POOL_SIZE=100
 ```
+
 **Importante:** Este arquivo .env é apenas local e não deve ser enviado ao repositório.
 
 Após configurar o .env, pode ser rodado o seguinte comando na raiz do projeto:
-```bash
-docker compose up -d
-```
-ou
+
 ```bash
 docker compose up --build -d api
 ```
@@ -118,10 +116,11 @@ Esta aplicação está preparada para utilizar o Serilog para gerar os logs. Par
 ```
 
 ## Open Telemetry
+
 Esta aplicação possui OpenTelemetry configurado. Utilizando o docker compose, já estará disponível o Aspire Dashboard para, em ambiente de desenvolvimento,
 verificar as métricas do serviço.
 
-Para acessar o Aspire Dashboard basta acessar a URL "http://localhost:18888". Dentro do arquivo .env será configurada as portas para acesso. As mesmas podem
+Para acessar o Aspire Dashboard basta acessar a URL "<http://localhost:18888>". Dentro do arquivo .env será configurada as portas para acesso. As mesmas podem
 ser alteradas caso necessário.
 
 ```javascript
@@ -138,7 +137,7 @@ Abaixo algumas explicações sobre a utilização desta API. Maiores detalhes po
 
 ### Url Endpoints
 
-Todos os endpoints da API possuem como padrão a url "http://url-da-api/api/endpoint". Através desses endpoints será possível realizar o controle de cada uma das informações disponíveis na aplicação.
+Todos os endpoints da API possuem como padrão a url "<http://url-da-api/api/endpoint>". Através desses endpoints será possível realizar o controle de cada uma das informações disponíveis na aplicação.
 
 ### Controle de acesso
 
@@ -146,7 +145,7 @@ Esta API receberá as requisições através de uma API Gateway. Deste modo, o c
 
 ## Swagger
 
-Esta aplicação foi desenvolvida utilizando o Swagger como documentação. Para acessar a documentação, basta acessar a URL http://url-da-api/docs
+Esta aplicação foi desenvolvida utilizando o Swagger como documentação. Para acessar a documentação, basta acessar a URL <http://url-da-api/docs>
 
 ## Testes
 
