@@ -45,15 +45,15 @@ builder.Services.AddControllers()
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "FCG Games v1");
-        options.RoutePrefix = "swagger/ui";
+        options.RoutePrefix = "swagger";
     });
-}
+//}
 
 app.UseHttpsRedirection();
 
