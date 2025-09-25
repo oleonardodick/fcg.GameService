@@ -21,9 +21,9 @@ RUN dotnet publish src/fcg.GameService.API/fcg.GameService.API.csproj -c Release
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-EXPOSE 8080
-
 # Copia os arquivos publicados da etapa de build
 COPY --from=build /app/publish .
 
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
 ENTRYPOINT ["dotnet", "fcg.GameService.API.dll"]
