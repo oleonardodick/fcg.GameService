@@ -108,6 +108,11 @@ jobs:
             echo "Deploying $service -> $IMAGE"
 
             az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
+            && az containerapp update \
+              --name $service \
+              --resource-group ${{ vars.RESOURCE_GROUP }} \
+              --target-port 8080 \
+              --image $IMAGE \
             || az containerapp create \
               --name $service \
               --resource-group ${{ vars.RESOURCE_GROUP }} \
