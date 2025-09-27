@@ -98,6 +98,10 @@ jobs:
             "AzureStorage__ConnectionString=${{secrets.QUEUE_CONNECTION}}"
             "AzureStorage__ProducerQueueName=${{secrets.QUEUE_PRODUCER_NAME}}"
             "AzureStorage__ConsumerQueueName=${{secrets.QUEUE_CONSUMER_NAME}}"
+            "OTEL_RESOURCE_ATTRIBUTES=${{secrets.OTEL_RESOURCE_ATTRIBUTES}}"
+            "OTEL_EXPORTER_OTLP_ENDPOINT=${{secrets.OTEL_EXPORTER_OTLP_ENDPOINT}}"
+            "OTEL_EXPORTER_OTLP_HEADERS=${{secrets.OTEL_EXPORTER_OTLP_HEADERS}}"
+            "OTEL_EXPORTER_OTLP_PROTOCOL=${{secrets.OTEL_EXPORTER_OTLP_PROTOCOL}}"
           )
 
           # Get services from docker-compose

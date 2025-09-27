@@ -14,18 +14,18 @@ services:
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "false"
       ASPNETCORE_URLS: "http://+:8080"
       ASPNETCORE_HTTP_PORT: 8080
-      ASPNETCORE_ENVIRONMENT: "Development"
-      MongoDbSettings__ConnectionString: "mongodb+srv://fcgAdmin:c45Znq5wse4NHeY4@fiapcluster.mj6paib.mongodb.net/?retryWrites=true&w=majority&appName=FiapCluster"
-      MongoDbSettings__DatabaseName: "FCGGameService"
-      ElasticSettings__ApiKey: "TVRoMTRwZ0JIQ3pxMjNvNXlzS2o6OUYzRWpXQmFhRnk0cWg2cmg2b3NiQQ=="
-      ElasticSettings__CloudId: "My_deployment:ZWFzdHVzMi5henVyZS5lbGFzdGljLWNsb3VkLmNvbTo0NDMkMzQzODAwOWU3NmZkNDE2ZjgyMTE1MTQ4NjM5OWJhOWMkYjY1MjM0YTk4NDRmNDc4OGFlMjcxZWUzYTc4NTNmNzc="
-      AzureStorage__ConnectionString: "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=stfcgpayments;AccountKey=XMVTiBBhW72Zi5DuaWMdjMPvO+BB6+eI9vcCXeI0WpUA+7dGQKYjiduistttaL7ZRF2YNrjJQ0oo+AStZekCfw=="
-      AzureStorage__ProducerQueueName: "game-purchase-requested"
-      AzureStorage__ConsumerQueueName: "game-purchase-completed"
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=fcg-gameService,service.namespace=fiap-cloud-games,deployment.environment=production"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-sa-east-1.grafana.net/otlp"
-      OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTM4ODAxNDpnbGNfZXlKdklqb2lNVFUwTkRnM09DSXNJbTRpT2lKbVkyY3RaMkZ0WlhObGNuWnBZMlV0WjNKaFptRnVZU0lzSW1zaU9pSnJiVGRpU3psWVZqUmpOemt6TkROeE1FZDVSV3BWTkhjaUxDSnRJanA3SW5JaU9pSndjbTlrTFhOaExXVmhjM1F0TVNKOWZRPT0="
-      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      MongoDbSettings__ConnectionString: ${MongoDbSettings__ConnectionString}
+      MongoDbSettings__DatabaseName: ${MongoDbSettings__DatabaseName}
+      ElasticSettings__ApiKey: ${ElasticSettings__ApiKey}
+      ElasticSettings__CloudId: ${ElasticSettings__CloudId}
+      AzureStorage__ConnectionString: ${AzureStorage__ConnectionString}
+      AzureStorage__ProducerQueueName: ${AzureStorage__ProducerQueueName}
+      AzureStorage__ConsumerQueueName: ${AzureStorage__ConsumerQueueName}
+      OTEL_RESOURCE_ATTRIBUTES: ${OTEL_RESOURCE_ATTRIBUTES}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS}
+      OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health", "||", "curl", "-f", "http://localhost:8080/", "||", "exit", "1"]
       interval: 45s
