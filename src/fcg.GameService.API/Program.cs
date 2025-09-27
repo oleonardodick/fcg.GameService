@@ -50,7 +50,7 @@ try
 
     builder.Services.AddProblemDetails();
 
-    // builder.Services.AddHostedService<GamePurchaseWorker>();
+    builder.Services.AddHostedService<GamePurchaseWorker>();
 
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddApplication();
