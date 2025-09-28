@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -28,20 +29,16 @@ public static class OpenTelemetrySettings
                             return !httpContext.Request.Path.Value?.Contains("/health") ?? true;
                         };
                     })
-                    .AddHttpClientInstrumentation()
-                    .AddOtlpExporter();
+                    .AddHttpClientInstrumentation();
             })
             .WithMetrics(metrics =>
             {
                 metrics
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddOtlpExporter();
+                    .AddHttpClientInstrumentation();
             })
-            .WithLogging(logging =>
-            {
-                logging.AddOtlpExporter();
-            });
+            .WithLogging()
+            .UseOtlpExporter();
             
         return services;
     }
