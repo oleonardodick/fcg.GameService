@@ -29,8 +29,8 @@ public class GamePurchaseUseCase(
             UserId = request.UserId,
             GameId = request.GameId,
             Amount = game.Price,
-            Currency = nameof(request.Currency),
-            PaymentMethod = nameof(request.PaymentMethod)
+            Currency = request.Currency.ToString(),
+            PaymentMethod = ((int)request.PaymentMethod).ToString()
         };
 
         await _publisher.PublishAsync(@event, cancellationToken);
