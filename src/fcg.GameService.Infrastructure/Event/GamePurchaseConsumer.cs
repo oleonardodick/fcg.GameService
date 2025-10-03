@@ -26,9 +26,11 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
 
     public async Task<GamePurchaseConsumeEvent> ConsumeAsync(CancellationToken cancellationToken)
     {
+        Azure.Response<Azure.Storage.Queues.Models.QueueMessage>? message = null;
+        
         try
         {
-            Azure.Response<Azure.Storage.Queues.Models.QueueMessage> message = await _client.ReceiveMessageAsync(cancellationToken: cancellationToken);
+            message = await _client.ReceiveMessageAsync(cancellationToken: cancellationToken);
             _logger.LogInformation("Fila de pagamento consumida com sucesso");
 
             if (message.Value == null)
@@ -38,9 +40,55 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
             }
 
             string decodedMessage = Encoding.UTF8.GetString(Convert.FromBase64String(message.Value.MessageText));
-            GamePurchaseConsumeEvent gamePurchaseEvent = JsonSerializer.Deserialize<GamePurchaseConsumeEvent>(decodedMessage)!;
+            GamePurchaseConsumeEvent gamePurchaseEvent = JsonSerializer.Deserialize<GamePurchaseConsumeEvent>(decodedMessage, new JsonSerializerOptions 
+            { 
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            })!;
             await _client.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
             return gamePurchaseEvent;
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogError(ex, "Mensagem Base64 inválida encontrada na fila. MessageId: {MessageId}", 
+                message?.Value?.MessageId ?? "Unknown");
+            
+            // Tentar remover a mensagem corrompida da fila
+            if (message?.Value != null)
+            {
+                try
+                {
+                    await _client.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
+                    _logger.LogInformation("Mensagem corrompida removida da fila com sucesso. MessageId: {MessageId}", message.Value.MessageId);
+                }
+                catch (Exception deleteEx)
+                {
+                    _logger.LogError(deleteEx, "Falha ao remover mensagem corrompida da fila. MessageId: {MessageId}", message.Value.MessageId);
+                }
+            }
+            
+            return null!;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Erro ao deserializar JSON da mensagem. MessageId: {MessageId}", 
+                message?.Value?.MessageId ?? "Unknown");
+            
+            // Remover mensagem com JSON inválido
+            if (message?.Value != null)
+            {
+                try
+                {
+                    await _client.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
+                    _logger.LogInformation("Mensagem com JSON inválido removida da fila. MessageId: {MessageId}", message.Value.MessageId);
+                }
+                catch (Exception deleteEx)
+                {
+                    _logger.LogError(deleteEx, "Falha ao remover mensagem com JSON inválido. MessageId: {MessageId}", message.Value.MessageId);
+                }
+            }
+            
+            return null!;
         }
         catch (Exception ex)
         {
