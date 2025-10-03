@@ -73,18 +73,36 @@ jobs:
 
       - name: Build and Push images
         run: |
-          VERSION=latest
+          # Generate unique version tag based on commit SHA and timestamp
+          VERSION=$(echo ${{ github.sha }} | cut -c1-7)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          FULL_VERSION="${VERSION}-${TIMESTAMP}"
+          
+          echo "Building images with version: $FULL_VERSION"
+          
           # Build local images
           docker compose -f ${{ env.COMPOSE_FILE }} build
 
-          # Tag and push each service image to ACR
+          # Tag and push each service image to ACR with both latest and versioned tags
           SERVICES=$(docker compose -f ${{ env.COMPOSE_FILE }} config --services | xargs)
           for service in $SERVICES; do
             LOCAL_IMAGE=$(docker compose -f ${{ env.COMPOSE_FILE }} config | awk "/image:/ && /$service/ {print \$2}")
-            ACR_IMAGE="${{ vars.REGISTRY }}/$service:latest"
-            docker tag $LOCAL_IMAGE $ACR_IMAGE
-            docker push $ACR_IMAGE
+            
+            # Tag with versioned tag
+            ACR_VERSIONED_IMAGE="${{ vars.REGISTRY }}/$service:$FULL_VERSION"
+            docker tag $LOCAL_IMAGE $ACR_VERSIONED_IMAGE
+            docker push $ACR_VERSIONED_IMAGE
+            
+            # Tag with latest tag
+            ACR_LATEST_IMAGE="${{ vars.REGISTRY }}/$service:latest"
+            docker tag $LOCAL_IMAGE $ACR_LATEST_IMAGE
+            docker push $ACR_LATEST_IMAGE
+            
+            echo "Pushed $service: $ACR_VERSIONED_IMAGE and $ACR_LATEST_IMAGE"
           done
+          
+          # Export version for use in deployment step
+          echo "IMAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV
 
       - name: Deploy services with ingress, secrets, and probes
         run: |
@@ -108,22 +126,42 @@ jobs:
           SERVICES=$(docker compose -f ${{ env.COMPOSE_FILE }} config --services | xargs)
 
           for service in $SERVICES; do
-            IMAGE=${{ vars.REGISTRY }}/$service:latest
-            echo "Deploying $service -> $IMAGE"
+            # Use versioned image to ensure new revision creation
+            IMAGE=${{ vars.REGISTRY }}/$service:${{ env.IMAGE_VERSION }}
+            echo "Deploying $service -> $IMAGE (version: ${{ env.IMAGE_VERSION }})"
 
-            az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1 \
-            || az containerapp create \
-              --name $service \
-              --resource-group ${{ vars.RESOURCE_GROUP }} \
-              --environment ${{ vars.ACA_ENV }} \
-              --image $IMAGE \
-              --target-port 8080 \
-              --ingress external \
-              --transport auto \
-              --min-replicas 1 \
-              --max-replicas 3 \
-              --registry-server ${{ vars.REGISTRY }} \
-              --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
-              --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
-              --env-vars ${ENV_VARS[@]}
+            # Check if container app exists
+            if az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1; then
+              echo "Container app $service exists, updating to create new revision..."
+              az containerapp update \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --image $IMAGE \
+                --min-replicas 1 \
+                --max-replicas 3 \
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
+                --set-env-vars ${ENV_VARS[@]}
+              
+              echo "Successfully updated $service with new revision using image: $IMAGE"
+            else
+              echo "Container app $service does not exist, creating new app..."
+              az containerapp create \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --environment ${{ vars.ACA_ENV }} \
+                --image $IMAGE \
+                --target-port 8080 \
+                --ingress external \
+                --transport auto \
+                --min-replicas 1 \
+                --max-replicas 3 \
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
+                --env-vars ${ENV_VARS[@]}
+              
+              echo "Successfully created $service with image: $IMAGE"
+            fi
           done
