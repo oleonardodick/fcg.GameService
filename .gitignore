@@ -371,3 +371,4 @@ FodyWeavers.xsd
 appsettings.*.json
 !appsettings.json
 !appsettings.Development.json
+.vscode/settings.json

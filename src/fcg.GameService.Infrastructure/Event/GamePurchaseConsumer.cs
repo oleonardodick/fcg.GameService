@@ -3,6 +3,7 @@ using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Domain.Event;
 using fcg.GameService.Presentation.Event.Consume;
 using Microsoft.Extensions.Configuration;
+using System.Text;
 using System.Text.Json;
 
 namespace fcg.GameService.Infrastructure.Event;
@@ -36,7 +37,8 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseConsumeEvent>
                 return null!;
             }
 
-            GamePurchaseConsumeEvent gamePurchaseEvent = JsonSerializer.Deserialize<GamePurchaseConsumeEvent>(message.Value.MessageText)!;
+            string decodedMessage = Encoding.UTF8.GetString(Convert.FromBase64String(message.Value.MessageText));
+            GamePurchaseConsumeEvent gamePurchaseEvent = JsonSerializer.Deserialize<GamePurchaseConsumeEvent>(decodedMessage)!;
             await _client.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
             return gamePurchaseEvent;
         }
