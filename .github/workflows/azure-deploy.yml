@@ -139,9 +139,6 @@ jobs:
                 --image $IMAGE \
                 --min-replicas 1 \
                 --max-replicas 3 \
-                --registry-server ${{ vars.REGISTRY }} \
-                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
-                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
                 --set-env-vars ${ENV_VARS[@]}
               
               echo "Successfully updated $service with new revision using image: $IMAGE"
