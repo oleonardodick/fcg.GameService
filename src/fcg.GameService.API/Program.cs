@@ -90,6 +90,18 @@ try
 
     Log.Information("Aplicação inicializada com sucesso.");
 
+    // Configura para exibir URLs quando o servidor iniciar
+    var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    lifetime.ApplicationStarted.Register(() =>
+    {
+        Console.WriteLine("\nServidor iniciado com sucesso!");
+        Console.WriteLine("URLs disponíveis:");
+        Console.WriteLine("   • http://localhost:5002");
+        Console.WriteLine("   • https://localhost:7127");
+        Console.WriteLine("Swagger UI: http://localhost:5002/swagger");
+        Console.WriteLine("═══════════════════════════════════════════════════════════════\n");
+    });
+
     app.Run();
 }
 catch (Exception ex)
