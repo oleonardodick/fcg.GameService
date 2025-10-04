@@ -35,50 +35,41 @@ Este projeto utiliza o MongoDB como banco de dados principal.
 
 ## ElasticSearch
 
-Este projeto utiliza o ElasticSearch para algumas funcionalidades. Para configurar este serviço, deve ser adicionado no appSetings o seguinte código:
-
-```json
-    "ElasticSettings": {
-    "ApiKey": "API KEY DO ELASTIC CLOUD",
-    "CloudId": "CLOUD ID DO ELASTIC CLOUD"
-  }
-```
+Este projeto utiliza o ElasticSearch para algumas funcionalidades. Para configurar este serviço, deve ser criado um cluster elastic para
+ser apontado no arquivo .ENV desta aplicação.
 
 ## Como rodar o projeto?
 
 ### Via Docker Compose
 
-Foi disponibilizado neste repositório um arquivo docker-compose.yml para que seja possível buildar e rodar a aplicação e seus correlatos diretamente via docker, sem a necessidade de rodar o projeto via dotnet.
+Foi disponibilizado neste repositório um arquivo docker-compose.yml para que seja possível buildar e rodar a aplicação, já apontando para
+as variáveis de ambiente necessárias.
 
-Aconselha-se o uso do docker-compose para rodar o projeto, visto que todos os serviços necessários já estarão configurados, bem como as variáveis de ambiente.
+Aconselha-se o uso do docker-compose para rodar o projeto.
 
 Para isso, deve ser disponibilizado na raiz do projeto um arquivo .env com a seguinte estrutura:
 
 ```javascript
-PROJECT_NAME=fcg-jogos
+  ASPNETCORE_ENVIRONMENT: "Development"
 
-# Port Configuration
-API_PORT=8080
-MONGO_PORT=27017
-DASHBOARD_PORT=18888
-OTLP_GRPC_PORT=18889
-OTLP_HTTP_PORT=18890
+  # MongoDB configuration
+  MongoDbSettings__ConnectionString: "<MongoConnectionString>"
+  MongoDbSettings__DatabaseName: "<MongoDatabaseName>"
 
-# MongoDB Configuration
-MONGO_ROOT_USERNAME=userName
-MONGO_ROOT_PASSWORD=password
-MONGO_DATABASE=databaseName
-MONGO_CONNECTION_STRING=mongodb://userName:password@mongodb:27017/databaseName?authSource=admin
+  # ElasticSettings configuration
+  ElasticSettings__ApiKey: "<Api Key>"
+  ElasticSettings__CloudId: "<Cloud ID>"
 
-# Open Telemetry Configuration
-OTEL_ENDPOINT=http://gameService-dashboard:18889
-OTEL_PROTOCOL=grpc
-OTEL_SERVICE_NAME=GameService
-OTEL_RESOURCE_ATTRIBUTES=service.version=1.0.0,deployment.environment=dev
+  # Azure configuration
+  AzureStorage__ConnectionString: "<Azure Connection>"
+  AzureStorage__ProducerQueueName: "<Producer queue name>"
+  AzureStorage__ConsumerQueueName: "<Consumer queue name>"
 
-# Database Settings
-MONGO_CONNECTION_TIMEOUT=30
-MONGO_MAX_POOL_SIZE=100
+  # Open telemetry configuration
+  OTEL_RESOURCE_ATTRIBUTES: "<Resource attributes>"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "<Endpoint>"
+  OTEL_EXPORTER_OTLP_HEADERS: "<Authorization>"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "<Protocol>"
 ```
 
 **Importante:** Este arquivo .env é apenas local e não deve ser enviado ao repositório.
@@ -96,19 +87,30 @@ Com isso, o docker irá buildar a imagem da API e subir todos os correlatos para
 Esta aplicação está preparada para utilizar o Serilog para gerar os logs. Para isso, devem ser adicionadas as seguintes configurações no appsettings.json
 
 ```json
-  "SerilogSettings":{
+  "Serilog": {
     "MinimumLevel": {
       "Default": "Information",
       "Override": {
         "Microsoft": "Warning",
-        "System": "Warning"
+        "Microsoft.AspNetCore.Hosting.Diagnostics": "Information",
+        "Microsoft.AspNetCore.Routing.EndpointMiddleware": "Warning",
+        "Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware": "Warning",
+        "System": "Warning",
+        "System.Net.Http.HttpClient": "Warning",
+        "MongoDB.Driver": "Information"
       }
     },
-    "WriteTo": [
-      { 
-        "Name": "Console",
+    "Filter": [
+      {
+        "Name": "ByExcluding",
         "Args": {
-          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {TraceId} {SpanId} {Message:lj}{NewLine}{Exception}"
+          "expression": "RequestPath like '/swagger%'"
+        }
+      },
+      {
+        "Name": "ByExcluding",
+        "Args": {
+          "expression": "RequestPath like '/health%'"
         }
       }
     ]
@@ -117,19 +119,8 @@ Esta aplicação está preparada para utilizar o Serilog para gerar os logs. Par
 
 ## Open Telemetry
 
-Esta aplicação possui OpenTelemetry configurado. Utilizando o docker compose, já estará disponível o Aspire Dashboard para, em ambiente de desenvolvimento,
-verificar as métricas do serviço.
-
-Para acessar o Aspire Dashboard basta acessar a URL "<http://localhost:18888>". Dentro do arquivo .env será configurada as portas para acesso. As mesmas podem
-ser alteradas caso necessário.
-
-```javascript
-DASHBOARD_PORT=18888
-OTLP_GRPC_PORT=18889
-OTLP_HTTP_PORT=18890
-
-OTEL_ENDPOINT=http://gameService-dashboard:18889
-```
+Esta aplicação possui OpenTelemetry configurado. Para enviar as métricas, basta adicionar as variáveis de ambiente citadas
+neste documento.
 
 ## Uso
 
