@@ -53,7 +53,8 @@ public class GameLibraryUseCase(
 
         bool elastic = await _elasticClient.AddOrUpdate(new UserLog
             (createdLibrary.UserId,
-             string.Join("|", createdLibrary.Games.Select(g => string.Join("|", g.Tags)))
+             string.Join("|", createdLibrary.Games.Select(g => string.Join("|", g.Tags))),
+             string.Join("|", createdLibrary.Games.Select(g => g.Id))
             ), ENTITY);
 
         if (!elastic)
@@ -79,7 +80,8 @@ public class GameLibraryUseCase(
         {
             bool elastic = await _elasticClient.AddOrUpdate(new UserLog
                 (library!.UserId,
-                 string.Join("|", gameAdquired.Tags)
+                 string.Join("|", gameAdquired.Tags),
+                 gameAdquired.Id
                 ), ENTITY);
 
             if (!elastic)
