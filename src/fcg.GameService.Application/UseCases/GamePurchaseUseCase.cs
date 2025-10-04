@@ -2,6 +2,7 @@
 using fcg.GameService.Domain.Enums;
 using fcg.GameService.Domain.Event;
 using fcg.GameService.Domain.Exceptions;
+using fcg.GameService.Domain.Models;
 using fcg.GameService.Presentation.DTOs.Game.Requests;
 using fcg.GameService.Presentation.DTOs.Game.Responses;
 using fcg.GameService.Presentation.DTOs.GameLibrary.Responses;
@@ -23,6 +24,24 @@ public class GamePurchaseUseCase(
     {
         ResponseGameDTO game = await _gameUseCase.GetByIdAsync(request.GameId) ??
             throw AppNotFoundException.ForEntity(ENTITY, request.GameId);
+
+        var library = await _gameLibraryUseCase.TryGetByUserIdAsync(request.UserId);
+        if (library is not null)
+        {
+            var existsGameOnLibrary = await _gameLibraryUseCase.ExistsGameOnLibraryAsync(library.Id, request.GameId);
+            if (existsGameOnLibrary) {
+                List<ErrorDetails> error = [
+                        new ErrorDetails {
+                            Property = nameof(request.GameId),
+                            Errors = ["Jogo já cadastrado na biblioteca do usuário."]
+                        }
+                    ];
+
+                    throw new AppValidationException(
+                        error
+                    );
+            }
+        }
 
         GamePurchasePublishEvent @event = new()
         {
@@ -66,7 +85,7 @@ public class GamePurchaseUseCase(
             ResponseGameDTO? game = await _gameUseCase.GetByIdAsync(response.GameId);
 
             // Criar biblioteca do usuário se não existir
-            ResponseGameLibraryDTO? library = await _gameLibraryUseCase.GetByUserIdAsync(response.UserId);
+            ResponseGameLibraryDTO? library = await _gameLibraryUseCase.TryGetByUserIdAsync(response.UserId);
 
             if (library is null)
             {
