@@ -113,6 +113,49 @@ public class GameLibraryUseCaseTests : IClassFixture<MappingFixture>
     }
 
     [Trait("Module", "GameLibraryUseCase")]
+    [Fact(DisplayName = "TryGetByUserIdAsync_ShouldReturnTheLibraryFromUser")]
+    public async Task TryGetByUserIdAsync_ShouldReturnTheLibraryFromUser()
+    {
+        //Arrange
+        var gameLibraries = GameLibraryFaker.FakeListOfGameLibrary(5, random.Next(1,5));
+        var gameLibrary = gameLibraries[4];
+
+        _repository
+            .Setup(g => g.GetByUserIdAsync(gameLibrary.UserId))
+            .ReturnsAsync(gameLibrary);
+
+        //Act
+        var result = await _useCase.TryGetByUserIdAsync(gameLibrary.UserId);
+
+        //Assert
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(gameLibrary.Id);
+        result.UserId.ShouldBe(gameLibrary.UserId);
+        result.Games.Select(g => new { g.Id, g.Name })
+            .ShouldBe(gameLibrary.Games.Select(g => new { g.Id, g.Name }));
+        _repository.Verify(g => g.GetByUserIdAsync(gameLibrary.UserId), Times.Once);
+    }
+
+    [Trait("Module", "GameLibraryUseCase")]
+    [Fact(DisplayName = "TryGetByUserIdAsync_ShouldReturnNull")]
+    public async Task TryGetByUserIdAsync_ShouldReturnNull()
+    {
+        //Arrange
+        var userId = Guid.NewGuid().ToString();
+
+        _repository
+            .Setup(g => g.GetByUserIdAsync(userId))
+            .ReturnsAsync((GameLibrary?)null);
+
+        //Act
+        var result = await _useCase.TryGetByUserIdAsync(userId);
+
+        //Assert
+        result.ShouldBeNull();
+        _repository.Verify(g => g.GetByUserIdAsync(userId), Times.Once);
+    }
+
+    [Trait("Module", "GameLibraryUseCase")]
     [Fact(DisplayName = "CreateAsync_ShouldCreateTheLibrary")]
     public async Task CreateAsync_ShouldCreateTheLibrary()
     {
