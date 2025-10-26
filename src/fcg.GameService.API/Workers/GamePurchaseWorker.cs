@@ -1,31 +1,37 @@
-﻿using fcg.GameService.Application.Interfaces;
+﻿/*
+    Como está sendo utilizado Masstransit, este código não é mais necessário, pois o próprio masstransit
+    realiza a busca automática das mensagens na fila.
+    O código ficará comentado para consultas futuras.
+*/
 
-namespace fcg.GameService.API.Workers;
+// using fcg.GameService.Application.Interfaces;
 
-public sealed class GamePurchaseWorker(
-    IAppLogger<GamePurchaseWorker> _logger,
-    IServiceScopeFactory factory) : BackgroundService
-{
-    private readonly IPurchaseUseCase _purchaseUseCase = factory.CreateScope().ServiceProvider.GetRequiredService<IPurchaseUseCase>();
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await _purchaseUseCase.ConsumeAsync(stoppingToken);
-            }
-            catch (TaskCanceledException)
-            {
-                // Ignorar a exceção quando o token de cancelamento for acionado
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao processar a fila de compras");
-            }
-        }
-    }
-}
+// namespace fcg.GameService.API.Workers;
+
+// public sealed class GamePurchaseWorker(
+//     IAppLogger<GamePurchaseWorker> _logger,
+//     IServiceScopeFactory factory) : BackgroundService
+// {
+//     private readonly IPurchaseUseCase _purchaseUseCase = factory.CreateScope().ServiceProvider.GetRequiredService<IPurchaseUseCase>();
+//     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+//     {
+//         while (!stoppingToken.IsCancellationRequested)
+//         {
+//             try
+//             {
+//                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+//                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+//                 await _purchaseUseCase.ConsumeAsync(stoppingToken);
+//             }
+//             catch (TaskCanceledException)
+//             {
+//                 // Ignorar a exceção quando o token de cancelamento for acionado
+//                 break;
+//             }
+//             catch (Exception ex)
+//             {
+//                 _logger.LogError(ex, "Erro ao processar a fila de compras");
+//             }
+//         }
+//     }
+// }

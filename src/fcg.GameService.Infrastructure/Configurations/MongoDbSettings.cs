@@ -2,7 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace fcg.GameService.Infrastructure.Configurations;
 
@@ -36,11 +35,6 @@ public static class MongoDbService
             MongoDbSettings mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
 
             MongoClientSettings settings = MongoClientSettings.FromConnectionString(mongoDbSettings.ConnectionString);
-
-            settings.ClusterConfigurator = cb =>
-            {
-                cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-            };
 
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
 

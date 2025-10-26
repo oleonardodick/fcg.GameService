@@ -1,11 +1,11 @@
 using fcg.GameService.API.Middlewares;
-using fcg.GameService.API.Workers;
+// using fcg.GameService.API.Workers;
 using fcg.GameService.Application;
 using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Application.Mappers;
 using fcg.GameService.Infrastructure;
 using fcg.GameService.Infrastructure.Adapters;
-using fcg.GameService.Infrastructure.Configurations;
+// using fcg.GameService.Infrastructure.Configurations;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -50,7 +50,8 @@ try
 
     builder.Services.AddProblemDetails();
 
-    builder.Services.AddHostedService<GamePurchaseWorker>();
+    // Worker não é mais necessário pois o masstransit faz esse trabalho.
+    // builder.Services.AddHostedService<GamePurchaseWorker>();
 
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddApplication();
