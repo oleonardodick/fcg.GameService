@@ -18,8 +18,11 @@ COPY . .
 RUN dotnet publish src/fcg.GameService.API/fcg.GameService.API.csproj -c Release -o /app/publish
 
 # RUNTIME STAGE
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
 WORKDIR /app
+
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 # Copia os arquivos publicados da etapa de build
 COPY --from=build /app/publish .
