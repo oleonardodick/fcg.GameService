@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: fcg-gameservice-api
-          image: acrfcggameservice.azurecr.io/fcg-gameservice-api:latest # Atualizar para utilizar variáveis ao invés de fixo
+          image: ${IMAGE}:${VERSION}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               protocol: TCP
