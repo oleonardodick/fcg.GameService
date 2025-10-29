@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-fcg-gameservice-api
+  labels:
+    app: deploy-fcg-gameservice-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fcg-gameservice-api
+  template:
+    metadata:
+      labels:
+        app: fcg-gameservice-api
+      name: fcg-gameservice-api
+    spec:
+      containers:
+        - name: fcg-gameservice-api
+          image: ${IMAGE}:${VERSION}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: DOTNET_USE_POLLING_FILE_WATCHER
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: DOTNET_USE_POLLING_FILE_WATCHER
+            - name: DOTNET_RUNNING_IN_CONTAINER
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: DOTNET_RUNNING_IN_CONTAINER
+            - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
+            - name: ASPNETCORE_URLS
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: ASPNETCORE_URLS
+            - name: ASPNETCORE_HTTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: ASPNETCORE_HTTP_PORT
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: MongoDbSettings__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-mongo-secrets
+                  key: MongoDbSettings__ConnectionString
+            - name: MongoDbSettings__DatabaseName
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-mongo-secrets
+                  key: MongoDbSettings__DatabaseName
+            - name: ElasticSettings__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-elastic-secrets
+                  key: ElasticSettings__ApiKey
+            - name: ElasticSettings__CloudId
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-elastic-secrets
+                  key: ElasticSettings__CloudId
+            - name: AzureStorage__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-storage-secrets
+                  key: AzureStorage__ConnectionString
+            - name: AzureStorage__ProducerQueueName
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-storage-secrets
+                  key: AzureStorage__ProducerQueueName
+            - name: AzureStorage__ConsumerQueueName
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-storage-secrets
+                  key: AzureStorage__ConsumerQueueName
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-otel-secrets
+                  key: OTEL_RESOURCE_ATTRIBUTES
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-otel-secrets
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-otel-secrets
+                  key: OTEL_EXPORTER_OTLP_HEADERS
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-gameservice-otel-secrets
+                  key: OTEL_EXPORTER_OTLP_PROTOCOL
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.2"
+            limits:
+              memory: "512Mi"
+              cpu: "0.5"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: fcg-gameservice-volume
+              mountPath: /logs
+      volumes:
+        - name: fcg-gameservice-volume
+          emptyDir: {}

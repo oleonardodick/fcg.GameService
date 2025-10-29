@@ -1,5 +1,5 @@
 services:
-  api:
+  fcg-gameservice-api:
     build:
       context: .
       dockerfile: Dockerfile

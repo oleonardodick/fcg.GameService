@@ -2,9 +2,9 @@ name: Build, Test & Deploy to Azure Container Apps
 
 on:
   pull_request:
-    branches: ["*"]
+    #branches: ["*"]
   push:
-    branches: ["main"]
+    #branches: ["main"]
 
 env:
   COMPOSE_FILE: docker-compose.yml
