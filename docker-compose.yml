@@ -1,5 +1,5 @@
 services:
-  api:
+  fcg-gameservice-api:
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,13 +19,16 @@ services:
       MongoDbSettings__DatabaseName: ${MongoDbSettings__DatabaseName}
       ElasticSettings__ApiKey: ${ElasticSettings__ApiKey}
       ElasticSettings__CloudId: ${ElasticSettings__CloudId}
-      AzureStorage__ConnectionString: ${AzureStorage__ConnectionString}
-      AzureStorage__ProducerQueueName: ${AzureStorage__ProducerQueueName}
-      AzureStorage__ConsumerQueueName: ${AzureStorage__ConsumerQueueName}
       OTEL_RESOURCE_ATTRIBUTES: ${OTEL_RESOURCE_ATTRIBUTES}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS}
       OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWSSettings__ServiceURL: ${AWSSettings__ServiceURL}
+      AWSSettings__SQS__GamePurchaseRequested: ${AWSSettings__SQS__GamePurchaseRequested}
+      AWSSettings__SQS__GamePurchaseCompleted: ${AWSSettings__SQS__GamePurchaseCompleted}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health", "||", "curl", "-f", "http://localhost:8080/", "||", "exit", "1"]
       interval: 45s

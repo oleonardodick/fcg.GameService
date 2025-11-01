@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fcg.GameService.API", "fcg.GameService.API.csproj", "{5039FB2B-2623-7CAE-BFA4-FDCC57260E91}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5039FB2B-2623-7CAE-BFA4-FDCC57260E91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5039FB2B-2623-7CAE-BFA4-FDCC57260E91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5039FB2B-2623-7CAE-BFA4-FDCC57260E91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5039FB2B-2623-7CAE-BFA4-FDCC57260E91}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {744F6935-9154-48D2-8B7A-49BDC24A6D55}
+	EndGlobalSection
+EndGlobal

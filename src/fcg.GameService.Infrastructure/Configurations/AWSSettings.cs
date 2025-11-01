@@ -27,16 +27,16 @@ public static class AWSService
         AWSSettings awsSettings = new();
         configuration.GetSection(nameof(AWSSettings)).Bind(awsSettings);
 
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AWS_ACCESS_KEY")))
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID")))
             if (string.IsNullOrEmpty(awsSettings.AccessKey))
                 throw new InvalidCredentialException("Parâmetro Access Key não configurada");
 
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AWS_SECRET_KEY")))
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY")))
             if (string.IsNullOrEmpty(awsSettings.SecretKey))
                 throw new InvalidCredentialException("Parâmetro Secret Key não configurada");
 
-        Environment.SetEnvironmentVariable("AWS_ACCESS_KEY", awsSettings.AccessKey);
-        Environment.SetEnvironmentVariable("AWS_SECRET_KEY", awsSettings.SecretKey);
+        Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", awsSettings.AccessKey);
+        Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", awsSettings.SecretKey);
 
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN")))
             if (!string.IsNullOrEmpty(awsSettings.Token))

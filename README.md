@@ -61,10 +61,13 @@ Para isso, deve ser disponibilizado na raiz do projeto um arquivo .env com a seg
   ElasticSettings__ApiKey: "<Api Key>"
   ElasticSettings__CloudId: "<Cloud ID>"
 
-  # Azure configuration
-  AzureStorage__ConnectionString: "<Azure Connection>"
-  AzureStorage__ProducerQueueName: "<Producer queue name>"
-  AzureStorage__ConsumerQueueName: "<Consumer queue name>"
+  # AWS configuration
+  AWS_ACCESS_KEY_ID: "<Access key>"
+  AWS_SECRET_ACCESS_KEY: "<Secret key>"
+  AWS_SESSION_TOKEN: "<Token> (necessário quando AWS Academy)"
+  AWSSettings__ServiceURL: "<Service URL> (necessário apenas para conexão com localstack)"
+  AWSSettings__SQS__GamePurchaseRequested: "<Nome fila publisher>"
+  AWSSettings__SQS__GamePurchaseCompleted: "<Nome fila consumer>"
 
   # Open telemetry configuration
   OTEL_RESOURCE_ATTRIBUTES: "<Resource attributes>"
@@ -78,7 +81,7 @@ Para isso, deve ser disponibilizado na raiz do projeto um arquivo .env com a seg
 Após configurar o .env, pode ser rodado o seguinte comando na raiz do projeto:
 
 ```bash
-docker compose up --build -d api
+docker compose up --build -d
 ```
 
 Com isso, o docker irá buildar a imagem da API e subir todos os correlatos para que seja possível utilizar este microsserviço.

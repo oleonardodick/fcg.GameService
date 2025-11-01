@@ -54,6 +54,7 @@ public class GamePurchaseConsumer : IConsumer<GamePurchaseCompleted>
                     Tags = game!.Tags
                 });
             }
+        _logger.LogInformation("Concluiu leitura da mensagem");
         }
     }
 }

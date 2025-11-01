@@ -26,6 +26,20 @@ public static class MassTransitSettings {
         {
             x.AddConsumer<GamePurchaseConsumer>();
 
+            x.AddConfigureEndpointsCallback((name, cfg) =>
+            {
+                cfg.UseMessageRetry(r =>
+                {
+                    r.Intervals(
+                        TimeSpan.FromSeconds(10),
+                        TimeSpan.FromSeconds(30),
+                        TimeSpan.FromSeconds(60),
+                        TimeSpan.FromSeconds(90),
+                        TimeSpan.FromSeconds(120)
+                    );
+                });
+            });
+
             x.UsingAmazonSqs((context, cfg) =>
             {
                 cfg.Host(awsSettings.Region, h =>
@@ -56,6 +70,8 @@ public static class MassTransitSettings {
 
                 cfg.ReceiveEndpoint(awsSettings.SQS.GamePurchaseCompleted, e =>
                 {
+                    e.PrefetchCount = 5;
+                    e.WaitTimeSeconds = 20;
                     e.ConfigureConsumeTopology = false;
                     e.ConfigureConsumer<GamePurchaseConsumer>(context);
                 });
