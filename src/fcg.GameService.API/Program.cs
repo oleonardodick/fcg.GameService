@@ -5,6 +5,7 @@ using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Application.Mappers;
 using fcg.GameService.Infrastructure;
 using fcg.GameService.Infrastructure.Adapters;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 // using fcg.GameService.Infrastructure.Configurations;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Models;
@@ -87,7 +88,26 @@ try
 
     app.MapControllers();
 
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health", new HealthCheckOptions
+    {
+        ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType = "application/json";
+            var response = new
+            {
+                status = report.Status.ToString(),
+                checks = report.Entries.Select(x => new
+                {
+                    name = x.Key,
+                    status = x.Value.Status.ToString(),
+                    description = x.Value.Description,
+                    exception = x.Value.Exception?.Message,
+                    duration = x.Value.Duration
+                })
+            };
+            await context.Response.WriteAsJsonAsync(response);
+        }
+    });
 
     Log.Information("Aplicação inicializada com sucesso.");
 
