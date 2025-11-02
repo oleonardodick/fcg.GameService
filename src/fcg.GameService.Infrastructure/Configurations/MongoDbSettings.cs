@@ -1,5 +1,7 @@
+using fcg.GameService.Infrastructure.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
@@ -20,9 +22,9 @@ public static class MongoDbService
         configuration.GetSection(nameof(MongoDbSettings)).Bind(mongoDbSettings);
 
         services.AddHealthChecks()
-            .AddMongoDb(
-                mongodbConnectionString: mongoDbSettings!.ConnectionString,
+            .AddCheck<MongoDbHealthCheck>(
                 name: "mongodb",
+                failureStatus: HealthStatus.Unhealthy,
                 timeout: TimeSpan.FromSeconds(5),
                 tags: ["db", "mongo"]
             );
@@ -37,14 +39,11 @@ public static class MongoDbService
 
             MongoClientSettings settings = MongoClientSettings.FromConnectionString(mongoDbSettings.ConnectionString);
 
-            settings.ClusterConfigurator = cb =>
-            {
-                cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-            };
-
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
 
             settings.ConnectTimeout = TimeSpan.FromSeconds(5);
+
+            settings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
 
             return new MongoClient(settings);
         });

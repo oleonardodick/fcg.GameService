@@ -1,12 +1,11 @@
+using fcg.Contracts;
+using fcg.GameService.Application.Interfaces;
 using fcg.GameService.Domain.Elasticsearch;
-using fcg.GameService.Domain.Event;
 using fcg.GameService.Domain.Repositories;
 using fcg.GameService.Infrastructure.Configurations;
 using fcg.GameService.Infrastructure.Elasticsearch;
-using fcg.GameService.Infrastructure.Event;
+using fcg.GameService.Infrastructure.Event.Publishers;
 using fcg.GameService.Infrastructure.Repositories;
-using fcg.GameService.Presentation.Event.Consume;
-using fcg.GameService.Presentation.Event.Publish;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -17,6 +16,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddMassTransitSettings(configuration);
+
         services.AddMongoDBService(configuration);
 
         services.Configure<ElasticSettings>(configuration.GetSection(nameof(ElasticSettings)));
@@ -24,8 +25,7 @@ public static class DependencyInjection
 
         services.AddSingleton(typeof(IElasticClient<>), typeof(ElasticClient<>));
 
-        services.AddScoped<IConsumer<GamePurchaseConsumeEvent>, GamePurchaseConsumer>();
-        services.AddScoped<IPublisher<GamePurchasePublishEvent>, GamePurchasePublisher>();
+        services.AddScoped<IMessagePublisher<GamePurchaseRequested>, GamePurchasePublisher>();
 
         services.AddScoped<IGameRepository, GameRepository>();
         services.AddScoped<IGameLibraryRepository, GameLibraryRepository>();
