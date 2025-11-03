@@ -2,10 +2,6 @@ name: Build and push to ECR
 
 on:
   workflow_call:
-    inputs:
-      run-build:
-        required: true
-        type: boolean
 
 jobs:
 

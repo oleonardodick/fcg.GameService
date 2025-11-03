@@ -9,7 +9,7 @@ on:
 
 jobs:
   unitTests:
-    uses: ./.github/workflows/reusable/run-tests.yml
+    uses: ./.github/workflows/reusable-run-tests.yml
     with:
       dotnet-env: ${{ inputs.dotnet-env }}
       test-project: 'tests/fcg.GameService.UnitTests/fcg.GameService.UnitTests.csproj'

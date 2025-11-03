@@ -29,6 +29,6 @@ jobs:
 
   tests:
     needs: build
-    uses: ./.github/workflows/jobs/tests.yml
+    uses: ./.github/workflows/tests.yml
     with:
       dotnet-env: '8.0.x'

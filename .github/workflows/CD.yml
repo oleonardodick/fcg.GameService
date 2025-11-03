@@ -10,32 +10,29 @@ on:
 
 jobs:
   pushECR:
-    uses: ./.github/workflows/jobs/aws/build-push-ecr.yml
-    with: 
-      run-build: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/build-push-ecr.yml
     secrets: inherit
 
   deployEKS:
     needs: pushECR
-    uses: ./.github/workflows/jobs/aws/deploy-eks.yml
-    with:
-      run-deploy: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/deploy-eks.yml
     secrets: inherit
 
   # jobs comentados pois não será feito o deploy no ACA.
   # mantido no código apenas para consulta futura
   # ensureResources:
   #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
-  #   uses: ./.github/workflows/jobs/azure/ensure-azure-resources.yml
+  #   uses: ./.github/workflows/ensure-azure-resources.yml
   #   secrets: inherit
 
   # pushACR:
   #   needs: ensureResources
-  #   uses: ./.github/workflows/jobs/azure/build-push-acr.yml
+  #   uses: ./.github/workflows/build-push-acr.yml
   #   secrets: inherit
 
   # deployACA:
   #   needs: pushACR
-  #   uses: ./.github/workflows/jobs/azure/deploy-aca.yml
+  #   uses: ./.github/workflows/deploy-aca.yml
   #   secrets: inherit
     
