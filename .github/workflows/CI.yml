@@ -6,9 +6,6 @@ on:
   push:
     branches: ["main"]
 
-env:
-  DOTNET_VERSION: '8.0.x'
-
 jobs:
   build:
     name: build
@@ -21,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: '8.0.x'
           cache: true
 
       - name: Restore dependencies
@@ -34,4 +31,4 @@ jobs:
     needs: build
     uses: ./.github/workflows/jobs/tests.yml
     with:
-      dotnet-env: ${{ env.DOTNET_VERSION }}
+      dotnet-env: '8.0.x'
