@@ -11,7 +11,6 @@ jobs:
   unitTests:
     uses: ./.github/workflows/reusable/run-tests.yml
     with:
-      test-project: 'tests/fcg.GameService.UnitTests/fcg.GameService.UnitTests.csproj'
       dotnet-env: ${{ inputs.dotnet-env }}
-
+      test-project: 'tests/fcg.GameService.UnitTests/fcg.GameService.UnitTests.csproj'
   #Quando a aplicação possuir outros testes, adicionar abaixo

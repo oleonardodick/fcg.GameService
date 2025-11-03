@@ -2,9 +2,14 @@ name: Deploy to EKS
 
 on:
   workflow_call:
+    inputs:
+      run-deploy:
+        required: true
+        type: boolean
 
 jobs:
   deploy:
+    if: ${{ inputs.run-deploy }}
     runs-on: ubuntu-latest
 
     steps:

@@ -10,13 +10,16 @@ on:
 
 jobs:
   pushECR:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/jobs/aws/build-push-ecr.yml
+    with: 
+      run-build: ${{ github.event.workflow_run.conclusion == 'success' }}
     secrets: inherit
 
   deployEKS:
     needs: pushECR
     uses: ./.github/workflows/jobs/aws/deploy-eks.yml
+    with:
+      run-deploy: ${{ github.event.workflow_run.conclusion == 'success' }}
     secrets: inherit
 
   # jobs comentados pois não será feito o deploy no ACA.

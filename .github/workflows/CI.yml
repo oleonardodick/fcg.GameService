@@ -33,3 +33,5 @@ jobs:
   tests:
     needs: build
     uses: ./.github/workflows/jobs/tests.yml
+    with:
+      dotnet-env: ${{ env.DOTNET_VERSION }}

@@ -2,10 +2,15 @@ name: Build and push to ECR
 
 on:
   workflow_call:
+    inputs:
+      run-build:
+        required: true
+        type: boolean
 
 jobs:
 
   build-and-push:
+    if: ${{ inputs.run-build }}
     runs-on: ubuntu-latest
 
     steps:
