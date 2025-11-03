@@ -1,0 +1,28 @@
+name: Ensure Azure Resources
+
+on:
+  workflow_call
+
+jobs:
+
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure Azure Resources
+        run: |
+          az group create -n ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}
+
+          az acr show -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} \
+          || az acr create -n ${{ vars.ACR_NAME }} -g ${{ vars.RESOURCE_GROUP }} --sku ${{ vars.ACR_SKU }}
+
+          az containerapp env show -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} \
+          || az containerapp env create -n ${{ vars.ACA_ENV }} -g ${{ vars.RESOURCE_GROUP }} -l ${{ vars.LOCATION }}

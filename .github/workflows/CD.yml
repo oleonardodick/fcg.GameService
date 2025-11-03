@@ -1,0 +1,38 @@
+name: CD
+
+on:
+  workflow_run:
+    worksflows: ["CI"]
+    types: 
+      - completed
+    branches:
+      - main
+
+jobs:
+  pushECR:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/jobs/aws/build-push-ecr.yml
+    secrets: inherit
+
+  deployEKS:
+    needs: pushECR
+    uses: ./.github/workflows/jobs/aws/deploy-eks.yml
+    secrets: inherit
+
+  # jobs comentados pois não será feito o deploy no ACA.
+  # mantido no código apenas para consulta futura
+  # ensureResources:
+  #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  #   uses: ./.github/workflows/jobs/azure/ensure-azure-resources.yml
+  #   secrets: inherit
+
+  # pushACR:
+  #   needs: ensureResources
+  #   uses: ./.github/workflows/jobs/azure/build-push-acr.yml
+  #   secrets: inherit
+
+  # deployACA:
+  #   needs: pushACR
+  #   uses: ./.github/workflows/jobs/azure/deploy-aca.yml
+  #   secrets: inherit
+    
