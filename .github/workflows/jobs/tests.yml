@@ -3,9 +3,9 @@ name: Execute all tests
 on:
   workflow_call:
     inputs:
-    dotnet-env:
-      required: true
-      type: string
+      dotnet-env:
+        required: true
+        type: string
 
 jobs:
   unitTests:

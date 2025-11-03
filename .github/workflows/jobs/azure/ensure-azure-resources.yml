@@ -1,7 +1,7 @@
 name: Ensure Azure Resources
 
 on:
-  workflow_call
+  workflow_call:
 
 jobs:
 
