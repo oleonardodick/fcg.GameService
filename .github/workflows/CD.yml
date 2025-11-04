@@ -1,5 +1,4 @@
 name: CD
-
 on:
   workflow_run:
     workflows: ["CI"]
@@ -15,15 +14,37 @@ permissions:
   packages: write       
 
 jobs:
+  debug:
+    name: Debug Info
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Head branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Event type: ${{ github.event.workflow_run.event }}"
+          echo "Head repo full name: ${{ github.event.workflow_run.head_repository.full_name }}"
+          echo "Repository full name: ${{ github.repository }}"
+          
+      - name: Dump full workflow_run context
+        run: echo '${{ toJSON(github.event.workflow_run) }}'
+
   pushECR:
     name: Build and Push to ECR
-    if: >
+    runs-on: ubuntu-latest
+    if: |
       ${{
         github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main'
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
       }}
-    uses: ./.github/workflows/build-push-ecr.yml
-    secrets: inherit
+    steps:
+      - name: Trigger ECR Build
+        run: echo "Would call reusable workflow here"
+    # Uncomment when debug is done:
+    # uses: ./.github/workflows/build-push-ecr.yml
+    # secrets: inherit
 
   # Exemplo futuro de deploy no EKS:
   # deployEKS:
