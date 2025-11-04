@@ -3,21 +3,35 @@ name: CD
 on:
   workflow_run:
     workflows: ["CI"]
-    types: 
+    types:
       - completed
-    branches:
-      - main
+
+permissions:
+  contents: read        
+  id-token: write       
+  actions: read         
+  checks: read         
+  deployments: write    
+  packages: write       
 
 jobs:
   pushECR:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Build and Push to ECR
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main'
+      }}
     uses: ./.github/workflows/build-push-ecr.yml
     secrets: inherit
 
-  #deployEKS:
-   # needs: pushECR
-   # uses: ./.github/workflows/deploy-eks.yml
-   # secrets: inherit
+  # Exemplo futuro de deploy no EKS:
+  # deployEKS:
+  #   name: Deploy to EKS
+  #   needs: pushECR
+  #   uses: ./.github/workflows/deploy-eks.yml
+  #   secrets: inherit
+
 
   # jobs comentados pois não será feito o deploy no ACA.
   # mantido no código apenas para consulta futura
