@@ -39,9 +39,9 @@ jobs:
           # para manter o backup das imagens, pois isso geraria 2 imagens, 1 com
           # o sha do commit e outra pra substituir a latest.
           # tags: |
-            # ${{ vars.ECR_NAMESPACE }}/${{ vars.ECR_REPOSITORY }}:latest
-            # ${{ vars.ECR_NAMESPACE }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
-          tags: ${{ vars.ECR_NAMESPACE }}/${{ vars.ECR_REPOSITORY }}:latest
+            # ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:latest
+            # ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
         
