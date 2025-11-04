@@ -139,7 +139,7 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         result.Description.ShouldBe(request.Description);
         result.Price.ShouldBe(request.Price);
         result.ReleasedDate.ShouldBe(request.ReleasedDate);
-        result.Tags.ShouldBe(request.Tags);
+        result.Tags.ShouldBe(request.Tags.Distinct());
         _repository.Verify(r => r.CreateAsync(It.IsAny<Game>()), Times.Once);
     }
 

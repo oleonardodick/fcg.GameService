@@ -1,0 +1,56 @@
+name: Build and push to ECR
+
+on:
+  workflow_call:
+
+jobs:
+
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: ACR Login
+        run: az acr login --name ${{ vars.ACR_NAME }}
+
+      - name: Build and Push images
+        run: |
+          # Generate unique version tag based on commit SHA and timestamp
+          VERSION=$(echo ${{ github.sha }} | cut -c1-7)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          FULL_VERSION="${VERSION}-${TIMESTAMP}"
+          
+          echo "Building images with version: $FULL_VERSION"
+          
+          # Build local images
+          docker compose -f ${{ env.COMPOSE_FILE }} build
+
+          # Tag and push each service image to ACR with both latest and versioned tags
+          SERVICES=$(docker compose -f ${{ env.COMPOSE_FILE }} config --services | xargs)
+          for service in $SERVICES; do
+            LOCAL_IMAGE=$(docker compose -f ${{ env.COMPOSE_FILE }} config | awk "/image:/ && /$service/ {print \$2}")
+            
+            # Tag with versioned tag
+            ACR_VERSIONED_IMAGE="${{ vars.REGISTRY }}/$service:$FULL_VERSION"
+            docker tag $LOCAL_IMAGE $ACR_VERSIONED_IMAGE
+            docker push $ACR_VERSIONED_IMAGE
+            
+            # Tag with latest tag
+            ACR_LATEST_IMAGE="${{ vars.REGISTRY }}/$service:latest"
+            docker tag $LOCAL_IMAGE $ACR_LATEST_IMAGE
+            docker push $ACR_LATEST_IMAGE
+            
+            echo "Pushed $service: $ACR_VERSIONED_IMAGE and $ACR_LATEST_IMAGE"
+          done
+          
+          # Export version for use in deployment step
+          echo "IMAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV

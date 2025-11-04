@@ -1,0 +1,16 @@
+name: Execute all tests
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-env:
+        required: true
+        type: string
+
+jobs:
+  unitTests:
+    uses: ./.github/workflows/reusable-run-tests.yml
+    with:
+      dotnet-env: ${{ inputs.dotnet-env }}
+      test-project: 'tests/fcg.GameService.UnitTests/fcg.GameService.UnitTests.csproj'
+  #Quando a aplicação possuir outros testes, adicionar abaixo

@@ -1,0 +1,68 @@
+name: Deploy to ACA
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy services with ingress, secrets, and probes
+        run: |
+          # Common env vars (shared across apps)
+          ENV_VARS=(
+            "ASPNETCORE_ENVIRONMENT=Production"
+            "MongoDbSettings__ConnectionString=${{ secrets.MONGO_CONNECTION}}"
+            "MongoDbSettings__DatabaseName=${{secrets.MONGO_DATABASE}}"
+            "ElasticSettings__ApiKey=${{secrets.ELASTIC_APIKEY}}"
+            "ElasticSettings__CloudId=${{secrets.ELASTIC_CLOUDID}}"
+            "AzureStorage__ConnectionString=${{secrets.QUEUE_CONNECTION}}"
+            "AzureStorage__ProducerQueueName=${{secrets.QUEUE_PRODUCER_NAME}}"
+            "AzureStorage__ConsumerQueueName=${{secrets.QUEUE_CONSUMER_NAME}}"
+            "OTEL_RESOURCE_ATTRIBUTES=${{secrets.OTEL_RESOURCE_ATTRIBUTES}}"
+            "OTEL_EXPORTER_OTLP_ENDPOINT=${{secrets.OTEL_EXPORTER_OTLP_ENDPOINT}}"
+            "OTEL_EXPORTER_OTLP_HEADERS=${{secrets.OTEL_EXPORTER_OTLP_HEADERS}}"
+            "OTEL_EXPORTER_OTLP_PROTOCOL=${{secrets.OTEL_EXPORTER_OTLP_PROTOCOL}}"
+          )
+
+          # Get services from docker-compose
+          SERVICES=$(docker compose -f ${{ env.COMPOSE_FILE }} config --services | xargs)
+
+          for service in $SERVICES; do
+            # Use versioned image to ensure new revision creation
+            IMAGE=${{ vars.REGISTRY }}/$service:${{ env.IMAGE_VERSION }}
+            echo "Deploying $service -> $IMAGE (version: ${{ env.IMAGE_VERSION }})"
+
+            # Check if container app exists
+            if az containerapp show --name $service --resource-group ${{ vars.RESOURCE_GROUP }} > /dev/null 2>&1; then
+              echo "Container app $service exists, updating to create new revision..."
+              az containerapp update \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --image $IMAGE \
+                --min-replicas 1 \
+                --max-replicas 3 \
+                --set-env-vars ${ENV_VARS[@]}
+              
+              echo "Successfully updated $service with new revision using image: $IMAGE"
+            else
+              echo "Container app $service does not exist, creating new app..."
+              az containerapp create \
+                --name $service \
+                --resource-group ${{ vars.RESOURCE_GROUP }} \
+                --environment ${{ vars.ACA_ENV }} \
+                --image $IMAGE \
+                --target-port 8080 \
+                --ingress external \
+                --transport auto \
+                --min-replicas 1 \
+                --max-replicas 3 \
+                --registry-server ${{ vars.REGISTRY }} \
+                --registry-username $(az acr credential show -n ${{ vars.ACR_NAME }} --query "username" -o tsv) \
+                --registry-password $(az acr credential show -n ${{ vars.ACR_NAME }} --query "passwords[0].value" -o tsv) \
+                --env-vars ${ENV_VARS[@]}
+              
+              echo "Successfully created $service with image: $IMAGE"
+            fi
+          done

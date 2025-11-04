@@ -1,0 +1,48 @@
+name: Build and push to ECR
+
+on:
+  workflow_call:
+
+jobs:
+
+  build-and-push:
+    if: ${{ inputs.run-build }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # necessário pois é usado AWS Academy
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup docker build
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          # para evitar gerar múltiplas imagens, evitando gastos, a imagem latest
+          # será a única gerada. Em uma situação de produção, se usaria esse código
+          # para manter o backup das imagens, pois isso geraria 2 imagens, 1 com
+          # o sha do commit e outra pra substituir a latest.
+          # tags: |
+            # ${{ vars.ECR_NAMESPACE }}/${{ vars.ECR_REPOSITORY }}:latest
+            # ${{ vars.ECR_NAMESPACE }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+          tags: ${{ vars.ECR_NAMESPACE }}/${{ vars.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        
