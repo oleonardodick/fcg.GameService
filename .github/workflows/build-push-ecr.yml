@@ -6,7 +6,6 @@ on:
 jobs:
 
   build-and-push:
-    if: ${{ inputs.run-build }}
     runs-on: ubuntu-latest
 
     steps:
