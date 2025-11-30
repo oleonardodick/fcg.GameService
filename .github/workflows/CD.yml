@@ -23,12 +23,11 @@ jobs:
     uses: ./.github/workflows/build-push-ecr.yml
     secrets: inherit
 
-  # Exemplo futuro de deploy no EKS:
-  # deployEKS:
-  #   name: Deploy to EKS
-  #   needs: pushECR
-  #   uses: ./.github/workflows/deploy-eks.yml
-  #   secrets: inherit
+  deployEKS:
+    name: Deploy to EKS
+    needs: pushECR
+    uses: ./.github/workflows/deploy-eks.yml
+    secrets: inherit
 
 
   # jobs comentados pois não será feito o deploy no ACA.
