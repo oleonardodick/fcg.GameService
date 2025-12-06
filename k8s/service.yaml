@@ -1,15 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: scv-fcg-gameservice-api
+  name: svc-fcg-gameservice-api
   labels:
-    app: scv-fcg-gameservice-api
+    app: svc-fcg-gameservice-api
 spec:
   selector:
     app: fcg-gameservice-api
   type: LoadBalancer
+  externalTrafficPolicy: Cluster
   ports:
     - protocol: TCP
       port: 80
       targetPort: 8080
-      nodePort: 30080
+      # nodePort: 30080

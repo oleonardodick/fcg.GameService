@@ -3,22 +3,110 @@ name: Deploy to EKS
 on:
   workflow_call:
 
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  APP_NAME: fcg-game-service
+  CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
+  DOCKER_SERVER: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+  DOCKER_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  IMAGE_VERSION: ${{ github.sha }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # necessário pois é usado AWS Academy
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name ${{ vars.CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+        run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
 
-      - name: Apply k8s files
-        run: kubectl apply -f k8s/
+      - name: Create namespace if not exists
+        run:  kubectl create namespace $APP_NAME --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create MongoDB secrets
+        env:
+          MONGO_CONNECTION_STRING: ${{ secrets.MONGO_CONNECTION_STRING }}
+          MONGO_DATABASE_NAME: ${{ secrets.MONGO_DATABASE_NAME }}
+        run: |
+          export MongoDbSettings_ConnectionString_B64=$(echo -n "$MONGO_CONNECTION_STRING" | base64 -w0)
+          export MongoDbSettings_DatabaseName_B64=$(echo -n "$MONGO_DATABASE_NAME" | base64 -w0)
+          envsubst < k8s/mongo-secrets.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Create AWS secrets
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: |
+          export AWS_ACCESS_KEY_ID_B64=$(echo -n "$AWS_ACCESS_KEY_ID" | base64 -w0)
+          export AWS_SECRET_ACCESS_KEY_B64=$(echo -n "$AWS_SECRET_ACCESS_KEY" | base64 -w0)
+          export AWS_SESSION_TOKEN_B64=$(echo -n "$AWS_SESSION_TOKEN" | base64 -w0)
+          envsubst < k8s/aws-secrets.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Create Elastic secrets
+        env:
+          ElasticSettings_ApiKey: ${{ secrets.ELASTIC_APIKEY }}
+          ElasticSettings_CloudId: ${{ secrets.ELASTIC_CLOUDID }}
+        run: |
+          export ElasticSettings_ApiKey_B64=$(echo -n "$ElasticSettings_ApiKey" | base64 -w0)
+          export ElasticSettings_CloudId_B64=$(echo -n "$ElasticSettings_CloudId" | base64 -w0)
+          envsubst < k8s/elastic-secrets.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Create OTEL secrets
+        env:
+          OTEL_RESOURCE_ATTRIBUTES: ${{ secrets.OTEL_RESOURCE_ATTRIBUTES }}
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+          OTEL_EXPORTER_OTLP_PROTOCOL: ${{ secrets.OTEL_EXPORTER_OTLP_PROTOCOL }}
+        run: |
+          export OTEL_RESOURCE_ATTRIBUTES_B64=$(echo -n "$OTEL_RESOURCE_ATTRIBUTES" | base64 -w0)
+          export OTEL_EXPORTER_OTLP_ENDPOINT_B64=$(echo -n "$OTEL_EXPORTER_OTLP_ENDPOINT" | base64 -w0)
+          export OTEL_EXPORTER_OTLP_HEADERS_B64=$(echo -n "$OTEL_EXPORTER_OTLP_HEADERS" | base64 -w0)
+          export OTEL_EXPORTER_OTLP_PROTOCOL_B64=$(echo -n "$OTEL_EXPORTER_OTLP_PROTOCOL" | base64 -w0)
+          envsubst < k8s/otel-secrets.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Create ECR image pull secret
+        run: |
+          kubectl create secret docker-registry ecr-secret \
+            --docker-server=$DOCKER_SERVER \
+            --docker-username=AWS \
+            --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
+            -n $APP_NAME --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply ConfigMap
+        env:
+          ASPNETCORE_ENVIRONMENT: ${{ vars.ASPNETCORE_ENVIRONMENT }}
+        run: |
+          envsubst < k8s/configmap.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Deploy Service
+        run: |
+          kubectl apply -f k8s/service.yaml --namespace=$APP_NAME       
+
+      - name: Deploy Deployment
+        run: |
+          envsubst < k8s/deployment.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Deploy HPA (Horizontal Pod Autoscaler)
+        run: |
+          envsubst < k8s/HPA.yaml | kubectl apply -f - -n $APP_NAME
+
+      - name: Wait for rollout
+        run: | 
+          kubectl rollout status deployment/$APP_NAME -n $APP_NAME --timeout=5m
+
+      - name: Check deployment status
+        run: |
+          kubectl get all -n $APP_NAME
+          kubectl get hpa -n $APP_NAME

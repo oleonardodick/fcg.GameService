@@ -116,6 +116,16 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         //Arrange
         var game = GameFaker.FakeListOfGame(1)[0];
 
+        //Objeto necessário pois o create não retorna as tags duplicadas.
+        var expectedGame = new Game(
+            id: game.Id,
+            name: game.Name,
+            price: game.Price,
+            releasedDate: game.ReleasedDate,
+            tags: game.Tags.Distinct().ToList(),
+            description: game.Description
+        );
+
         var request = new CreateGameDTO
         {
             Name = game.Name,
@@ -127,7 +137,7 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
 
         _repository
             .Setup(g => g.CreateAsync(It.IsAny<Game>()))
-            .ReturnsAsync(game);
+            .ReturnsAsync(expectedGame);
 
         //Act
         var result = await _useCase.CreateAsync(request);
@@ -139,7 +149,7 @@ public class GameUseCaseTests : IClassFixture<MappingFixture>
         result.Description.ShouldBe(request.Description);
         result.Price.ShouldBe(request.Price);
         result.ReleasedDate.ShouldBe(request.ReleasedDate);
-        result.Tags.ShouldBe(request.Tags.Distinct());
+        result.Tags.ShouldBe(expectedGame.Tags);
         _repository.Verify(r => r.CreateAsync(It.IsAny<Game>()), Times.Once);
     }
 
