@@ -100,7 +100,7 @@ jobs:
 
       - name: Deploy HPA (Horizontal Pod Autoscaler)
         run: |
-          envsubst < k8s/HPA.yaml | kubectl apply -f - -n $APP_NAME
+          envsubst < k8s/hpa.yaml | kubectl apply -f - -n $APP_NAME
 
       - name: Wait for rollout
         run: | 
