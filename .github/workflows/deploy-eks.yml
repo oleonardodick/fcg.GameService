@@ -35,8 +35,8 @@ jobs:
 
       - name: Create MongoDB secrets
         env:
-          MONGO_CONNECTION_STRING: ${{ secrets.MONGO_CONNECTION_STRING }}
-          MONGO_DATABASE_NAME: ${{ secrets.MONGO_DATABASE_NAME }}
+          MONGO_CONNECTION_STRING: ${{ secrets.MONGO_CONNECTION }}
+          MONGO_DATABASE_NAME: ${{ secrets.MONGO_DATABASE }}
         run: |
           export MongoDbSettings_ConnectionString_B64=$(echo -n "$MONGO_CONNECTION_STRING" | base64 -w0)
           export MongoDbSettings_DatabaseName_B64=$(echo -n "$MONGO_DATABASE_NAME" | base64 -w0)
