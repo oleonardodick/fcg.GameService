@@ -104,7 +104,7 @@ jobs:
 
       - name: Wait for rollout
         run: | 
-          kubectl rollout status deployment/$APP_NAME -n $APP_NAME --timeout=5m
+          kubectl rollout status deployment/deploy-fcg-gameservice-api -n $APP_NAME --timeout=5m
 
       - name: Check deployment status
         run: |
