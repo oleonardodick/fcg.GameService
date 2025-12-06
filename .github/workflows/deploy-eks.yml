@@ -86,6 +86,10 @@ jobs:
       - name: Apply ConfigMap
         env:
           ASPNETCORE_ENVIRONMENT: ${{ vars.ASPNETCORE_ENVIRONMENT }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          SQS_CONSUMER: ${{secrets.QUEUE_CONSUMER_NAME}}
+          SQS_PRODUCER: ${{secrets.QUEUE_PRODUCER_NAME}}
+
         run: |
           envsubst < k8s/configmap.yaml | kubectl apply -f - -n fcg-game-service
 

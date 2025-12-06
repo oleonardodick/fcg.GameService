@@ -60,6 +60,30 @@ spec:
                   name: fcg-gameservice-config
                   key: ASPNETCORE_ENVIRONMENT
 
+            - name: AWS__Region
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: AWS__Region
+
+            - name: AWS__ServiceURL
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: AWS__ServiceURL
+
+            - name: AWS__SQS__GamePurchaseRequested
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: AWS__SQS__GamePurchaseRequested
+
+            - name: AWS__SQS__GamePurchaseCompleted
+              valueFrom:
+                configMapKeyRef:
+                  name: fcg-gameservice-config
+                  key: AWS__SQS__GamePurchaseCompleted
+
             # -------------------------------------
             # MongoDB Secrets
             # -------------------------------------
