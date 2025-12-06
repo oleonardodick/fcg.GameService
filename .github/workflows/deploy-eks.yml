@@ -25,7 +25,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # necessário pois é usado AWS Academy
+          # somente enviar quando for AWS Academy. AWS normal pode ser removido
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
       - name: Update kubeconfig
