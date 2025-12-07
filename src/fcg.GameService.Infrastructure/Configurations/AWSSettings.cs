@@ -1,3 +1,7 @@
+using System.Security.Authentication;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
 public class AWSSettings
 {
     public string ServiceURL { get; set; } = string.Empty;
