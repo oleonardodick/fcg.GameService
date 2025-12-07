@@ -12,7 +12,6 @@ data:
   ASPNETCORE_URLS: "http://+:8080"
   ASPNETCORE_HTTP_PORT: "8080"
   ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-  AWS__Region: ${AWS_REGION}
-  AWS__ServiceURL: ""
-  AWS__SQS__GamePurchaseRequested: ${SQS_CONSUMER}
-  AWS__SQS__GamePurchaseCompleted: ${SQS_PRODUCER}
+  AWSSettings__Region: ${AWS_REGION}
+  AWSSettings__SQS__GamePurchaseRequested: ${SQS_CONSUMER}
+  AWSSettings__SQS__GamePurchaseCompleted: ${SQS_PRODUCER}
