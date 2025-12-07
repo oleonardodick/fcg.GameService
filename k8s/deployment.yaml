@@ -111,19 +111,19 @@ spec:
             # -------------------------------------
             # AWS Secrets
             # -------------------------------------
-            - name: AWS__AccessKey
+            - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: fcg-gameservice-aws-secrets
                   key: AWS_ACCESS_KEY_ID
 
-            - name: AWS__SecretKey
+            - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: fcg-gameservice-aws-secrets
                   key: AWS_SECRET_ACCESS_KEY
 
-            - name: AWS__SessionToken
+            - name: AWS_SESSION_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: fcg-gameservice-aws-secrets
