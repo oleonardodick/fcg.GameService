@@ -8,19 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace fcg.GameService.Infrastructure.Configurations;
 
-public static class MassTransitSettings {
+public static class MassTransitSettings
+{
     public static IServiceCollection AddMassTransitSettings(this IServiceCollection services, IConfiguration configuration)
     {
-        AWSService.SetAWSSettingsFromConfiguration(configuration);
+        // Carrega e valida a configuração real (env + appsettings)
+        var awsSettings = AWSService.LoadAndValidate(configuration);
 
-        AWSSettings awsSettings = new();
-        configuration.GetSection(nameof(AWSSettings)).Bind(awsSettings);
-
-        if (string.IsNullOrEmpty(awsSettings.SQS.GamePurchaseRequested))
-            throw new ConfigurationException("Parâmetro GamePurchaseRequested não configurado");
-
-        if (string.IsNullOrEmpty(awsSettings.SQS.GamePurchaseCompleted))
-            throw new ConfigurationException("Parâmetro GamePurchaseCompleted não configurado");
+        // Registra o AWSSettings para ser injetado em serviços dependentes
+        services.AddSingleton(awsSettings);
 
         services.AddMassTransit(x =>
         {
@@ -44,7 +40,8 @@ public static class MassTransitSettings {
             {
                 cfg.Host(awsSettings.Region, h =>
                 {
-                    if (!string.IsNullOrEmpty(awsSettings.ServiceURL))
+                    // CONFIGURAÇÃO PARA LOCALSTACK
+                    if (!string.IsNullOrWhiteSpace(awsSettings.ServiceURL))
                     {
                         h.Config(new AmazonSQSConfig
                         {
@@ -56,8 +53,12 @@ public static class MassTransitSettings {
                             ServiceURL = awsSettings.ServiceURL
                         });
                     }
+
+                    // OBS: Credenciais já estão definidas como Environment Variables
+                    // por LoadAndValidate() – a AWS SDK usa automaticamente
                 });
 
+                // Seta os nomes das entidades SQS/SNS explicitamente
                 cfg.Message<GamePurchaseCompleted>(m =>
                 {
                     m.SetEntityName(awsSettings.SQS.GamePurchaseCompleted);
@@ -68,15 +69,18 @@ public static class MassTransitSettings {
                     m.SetEntityName(awsSettings.SQS.GamePurchaseRequested);
                 });
 
+                // Endpoint que escuta a fila
                 cfg.ReceiveEndpoint(awsSettings.SQS.GamePurchaseCompleted, e =>
                 {
                     e.PrefetchCount = 5;
                     e.WaitTimeSeconds = 20;
                     e.ConfigureConsumeTopology = false;
+
                     e.ConfigureConsumer<GamePurchaseConsumer>(context);
                 });
             });
         });
+
         return services;
     }
 }

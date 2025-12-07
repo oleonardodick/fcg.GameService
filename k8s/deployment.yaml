@@ -23,138 +23,19 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
-          env:
-            - name: DOTNET_USE_POLLING_FILE_WATCHER
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: DOTNET_USE_POLLING_FILE_WATCHER
-
-            - name: DOTNET_RUNNING_IN_CONTAINER
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: DOTNET_RUNNING_IN_CONTAINER
-
-            - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
-
-            - name: ASPNETCORE_URLS
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: ASPNETCORE_URLS
-
-            - name: ASPNETCORE_HTTP_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: ASPNETCORE_HTTP_PORT
-
-            - name: ASPNETCORE_ENVIRONMENT
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: ASPNETCORE_ENVIRONMENT
-
-            - name: AWSSettings__Region
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: AWSSettings__Region
-
-            - name: AWSSettings__SQS__GamePurchaseRequested
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: AWSSettings__SQS__GamePurchaseRequested
-
-            - name: AWSSettings__SQS__GamePurchaseCompleted
-              valueFrom:
-                configMapKeyRef:
-                  name: fcg-gameservice-config
-                  key: AWSSettings__SQS__GamePurchaseCompleted
-
-            # -------------------------------------
-            # MongoDB Secrets
-            # -------------------------------------
-            - name: MongoDbSettings__ConnectionString
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-mongo-secrets
-                  key: MongoDbSettings__ConnectionString
-
-            - name: MongoDbSettings__DatabaseName
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-mongo-secrets
-                  key: MongoDbSettings__DatabaseName
-
-            # -------------------------------------
-            # Elasticsearch Secrets
-            # -------------------------------------
-            - name: ElasticSettings__ApiKey
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-elastic-secrets
-                  key: ElasticSettings__ApiKey
-
-            - name: ElasticSettings__CloudId
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-elastic-secrets
-                  key: ElasticSettings__CloudId
-
-            # -------------------------------------
-            # AWS Secrets
-            # -------------------------------------
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-aws-secrets
-                  key: AWS_ACCESS_KEY_ID
-
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-aws-secrets
-                  key: AWS_SECRET_ACCESS_KEY
-
-            - name: AWS_SESSION_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-aws-secrets
-                  key: AWS_SESSION_TOKEN
-
-            # -------------------------------------
-            # Open Telemetry Secrets
-            # -------------------------------------
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-otel-secrets
-                  key: OTEL_RESOURCE_ATTRIBUTES
-
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-otel-secrets
-                  key: OTEL_EXPORTER_OTLP_ENDPOINT
-
-            - name: OTEL_EXPORTER_OTLP_HEADERS
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-otel-secrets
-                  key: OTEL_EXPORTER_OTLP_HEADERS
-
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              valueFrom:
-                secretKeyRef:
-                  name: fcg-gameservice-otel-secrets
-                  key: OTEL_EXPORTER_OTLP_PROTOCOL
+          
+          #Carrega secrets e configmap
+          envFrom:
+            - configMapRef: 
+                name: fcg-gameservice-config
+            - secretRef:
+                name: fcg-gameservice-mongo-secrets
+            - secretRef:
+                name: fcg-gameservice-elastic-secrets
+            - secretRef:
+                name: fcg-gameservice-aws-secrets
+            - secretRef:
+                name: fcg-gameservice-otel-secrets
 
           resources:
             requests:
